@@ -405,7 +405,7 @@ h1 {
   }
 }
 </style>
-<script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="YOUR_APP_KEY_HERE"></script>
+<script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="PASTE_YOUR_DROPBOX_APP_KEY_HERE"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -663,35 +663,19 @@ function App() {
     }
   };
 
-  const generatePDFs = () => {
-    try {
-      const { jsPDF } = window.jspdf;
-      
-      rows.forEach((row) => {
-      
-  
+
   const uploadToDropbox = (pdfBlob, filename) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = function() {
-        const dataUrl = reader.result;
-        
-        // Use Dropbox Saver API
         if (typeof Dropbox !== 'undefined' && Dropbox.save) {
           Dropbox.save({
-            files: [{
-              url: dataUrl,
-              filename: filename
-            }],
-            success: function() {
-              resolve({ success: true, filename });
-            },
-            error: function(errorMessage) {
-              reject(new Error(errorMessage));
-            }
+            files: [{ url: reader.result, filename: filename }],
+            success: () => resolve({ success: true, filename }),
+            error: (err) => reject(new Error(err))
           });
         } else {
-          reject(new Error('Dropbox SDK not loaded'));
+          reject(new Error('Dropbox SDK not loaded. Did you add your App Key?'));
         }
       };
       reader.readAsDataURL(pdfBlob);
@@ -702,17 +686,99 @@ function App() {
     try {
       const { jsPDF } = window.jspdf;
       let successCount = 0;
-      let failCount = 0;
       
       for (const row of rows) {
-        // Generate PDF
+        const doc = new jsPDF();
+        
+        // Add logo
+        try {
+          doc.addImage(COMPANY_LOGO, 'PNG', 15, 10, 60, 30);
+        } catch (e) {}
+        
+        // Company info
+        doc.setFontSize(14);
+        doc.setTextColor(0, 102, 153);
+        doc.setFont(undefined, 'bold');
+        doc.text("YOUR GO-TO FLOW PROS", 200, 20, { align: "right" });
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont(undefined, 'normal');
+        doc.text("342 Waxwood Ln. San Antonio, TX 78216", 200, 26, { align: "right" });
+        doc.text("Mick@flow-cert.com | (210) 601-9318", 200, 31, { align: "right" });
+        doc.text("www.flow-cert.com", 200, 36, { align: "right" });
+        
+        doc.setFontSize(14);
+        doc.text(`${row.serviceType} Certificate`, 105, 50, { align: "center" });
+        
+        const visibleColumns = getVisibleColumns(row.serviceType);
+        const tableData = visibleColumns.filter(col => col !== 'photos' && row[col]).map(col => [COLUMN_LABELS[col], row[col]]);
+        
+        doc.autoTable({
+          startY: 60,
+          head: [['Field', 'Value']],
+          body: tableData,
+          theme: 'grid',
+          headStyles: { fillColor: [26, 77, 46], textColor: [255, 214, 10] },
+          styles: { fontSize: 9 }
+        });
+        
+        if (row.photos.length > 0) {
+          let yPos = doc.lastAutoTable.finalY + 15;
+          doc.setFontSize(12);
+          doc.text("Field Photos:", 20, yPos);
+          yPos += 10;
+          
+          row.photos.forEach((photo, i) => {
+            if (yPos > 250) { doc.addPage(); yPos = 20; }
+            try {
+              doc.addImage(photo.data, 'JPEG', 20, yPos, 80, 60);
+              doc.setFontSize(9);
+              doc.text(`Photo ${i + 1}`, 105, yPos + 5);
+              yPos += 70;
+            } catch (e) {}
+          });
+        }
+        
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(9);
+          doc.text("Certified by YOUR GO-TO FLOW PROS", 105, 285, { align: "center" });
+        }
+        
+        const year = row.date.split('-')[0];
+        const customerClean = row.customer.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 40);
+        const facilityClean = row.facility.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 40);
+        const filename = `${year}-${customerClean}-${facilityClean}.pdf`;
+        
+        const pdfBlob = doc.output('blob');
+        
+        try {
+          await uploadToDropbox(pdfBlob, filename);
+          successCount++;
+        } catch (err) {
+          console.error(`Upload failed for ${filename}:`, err);
+        }
+      }
+      
+      setStatus({ type: 'success', msg: `Uploaded ${successCount}/${rows.length} certificates to Dropbox!` });
+    } catch (err) {
+      setStatus({ type: 'error', msg: 'Error: ' + err.message });
+    }
+  };
+
+  const generatePDFs = () => {
+    try {
+      const { jsPDF } = window.jspdf;
+      
+      rows.forEach((row) => {
         const doc = new jsPDF();
         
         // Add logo
         try {
           doc.addImage(COMPANY_LOGO, 'PNG', 15, 10, 60, 30);
         } catch (e) {
-          console.log("Logo load error:", e);
+          console.log("Logo error:", e);
         }
         
         // Company info
@@ -774,109 +840,10 @@ function App() {
           doc.text("Certified by YOUR GO-TO FLOW PROS", 105, 285, { align: "center" });
         }
         
-        // Generate filename
         const year = row.date.split('-')[0];
         const customerClean = row.customer.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 40);
         const facilityClean = row.facility.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 40);
         const filename = `${year}-${customerClean}-${facilityClean}.pdf`;
-        
-        // Get PDF as blob
-        const pdfBlob = doc.output('blob');
-        
-        // Upload to Dropbox
-        try {
-          await uploadToDropbox(pdfBlob, filename);
-          successCount++;
-        } catch (err) {
-          console.error(`Failed to upload ${filename}:`, err);
-          failCount++;
-        }
-      }
-      
-      if (failCount === 0) {
-        setStatus({ type: 'success', msg: `Uploaded ${successCount} certificates to Dropbox!` });
-      } else {
-        setStatus({ type: 'error', msg: `Uploaded ${successCount}, failed ${failCount}` });
-      }
-    } catch (err) {
-      setStatus({ type: 'error', msg: 'Upload error: ' + err.message });
-    }
-  };
-
-  const doc = new jsPDF();
-        
-        // Add logo
-        try {
-          doc.addImage(COMPANY_LOGO, 'PNG', 15, 10, 60, 30);
-        } catch (e) {
-          console.log("Logo load error:", e);
-        }
-        
-        // Company info (right side)
-        doc.setFontSize(14);
-        doc.setTextColor(0, 102, 153);
-        doc.setFont(undefined, 'bold');
-        doc.text("YOUR GO-TO FLOW PROS", 200, 20, { align: "right" });
-        
-        doc.setFontSize(9);
-        doc.setTextColor(0, 0, 0);
-        doc.setFont(undefined, 'normal');
-        doc.text("342 Waxwood Ln. San Antonio, TX 78216", 200, 26, { align: "right" });
-        doc.text("Mick@flow-cert.com | (210) 601-9318", 200, 31, { align: "right" });
-        doc.text("www.flow-cert.com", 200, 36, { align: "right" });
-        
-        doc.setFontSize(14);
-        doc.text(`${row.serviceType} Certificate`, 105, 50, { align: "center" });
-        
-        const visibleColumns = getVisibleColumns(row.serviceType);
-        const tableData = visibleColumns
-          .filter(col => col !== 'photos' && row[col])
-          .map(col => [COLUMN_LABELS[col], row[col]]);
-        
-        doc.autoTable({
-          startY: 60,
-          head: [['Field', 'Value']],
-          body: tableData,
-          theme: 'grid',
-          headStyles: { fillColor: [26, 77, 46], textColor: [255, 214, 10] },
-          styles: { fontSize: 9 }
-        });
-        
-        if (row.photos.length > 0) {
-          let yPos = doc.lastAutoTable.finalY + 15;
-          doc.setFontSize(12);
-          doc.text("Field Photos:", 20, yPos);
-          yPos += 10;
-          
-          row.photos.forEach((photo, i) => {
-            if (yPos > 250) {
-              doc.addPage();
-              yPos = 20;
-            }
-            try {
-              doc.addImage(photo.data, 'JPEG', 20, yPos, 80, 60);
-              doc.setFontSize(9);
-              doc.text(`Photo ${i + 1}`, 105, yPos + 5);
-              yPos += 70;
-            } catch (e) {
-              console.log("Error adding photo:", e);
-            }
-          });
-        }
-        
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-          doc.setPage(i);
-          doc.setFontSize(9);
-          doc.text("Certified by YOUR GO-TO FLOW PROS", 105, 285, { align: "center" });
-        }
-        
-        // Generate filename: YEAR-CUSTOMER-SITE.pdf
-        const year = row.date.split('-')[0];
-        const customerClean = row.customer.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 40);
-        const facilityClean = row.facility.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 40);
-        const filename = `${year}-${customerClean}-${facilityClean}.pdf`;
-        
         doc.save(filename);
       });
       
@@ -884,144 +851,6 @@ function App() {
     } catch (err) {
       setStatus({ type: 'error', msg: 'PDF error: ' + err.message });
     }
-  };
-
-
-  const saveRawData = () => {
-    try {
-      // Create comprehensive data record
-      const dataRecord = {
-        exportDate: new Date().toISOString(),
-        exportedBy: "PCMS Field Data Collector",
-        version: "1.0",
-        totalRecords: rows.length,
-        records: rows.map(row => ({
-          // Core identification
-          id: row.id,
-          date: row.date,
-          customer: row.customer,
-          facility: row.facility,
-          serviceType: row.serviceType,
-          
-          // Equipment details
-          manufacturer: row.manufacturer,
-          serialNumber: row.serialNumber,
-          meterReading: row.meterReading,
-          method: row.method,
-          
-          // Closed Pipe specific
-          pipeMaterial: row.pipeMaterial,
-          pipeSize: row.pipeSize,
-          validatingFlow: row.validatingFlow,
-          customerFlow: row.customerFlow,
-          
-          // Open Channel specific
-          primaryDevice: row.primaryDevice,
-          levelChannel: row.levelChannel,
-          levelMeter: row.levelMeter,
-          
-          // Chart Recorder specific
-          valueMeter: row.valueMeter,
-          valueChart: row.valueChart,
-          
-          // Loop Test specific
-          lowDesired: row.lowDesired,
-          lowMeasured: row.lowMeasured,
-          midDesired: row.midDesired,
-          midMeasured: row.midMeasured,
-          highDesired: row.highDesired,
-          highMeasured: row.highMeasured,
-          
-          // General
-          units: row.units,
-          notes: row.notes,
-          testedBy: row.testedBy,
-          
-          // Photos metadata
-          photoCount: row.photos.length,
-          photos: row.photos.map((p, i) => ({
-            photoNumber: i + 1,
-            name: p.name,
-            size: p.data.length,
-            timestamp: new Date().toISOString()
-          }))
-        }))
-      };
-      
-      // Convert to JSON
-      const jsonStr = JSON.stringify(dataRecord, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const timestamp = new Date().toISOString().split('T')[0];
-      a.download = `PCMS_Raw_Data_${timestamp}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      setStatus({ type: 'success', msg: `Saved raw data: ${rows.length} records` });
-    } catch (err) {
-      setStatus({ type: 'error', msg: 'Save error: ' + err.message });
-    }
-  };
-
-  const saveRawDataWithPhotos = () => {
-    try {
-      // Create complete data backup INCLUDING photos
-      const completeBackup = {
-        exportDate: new Date().toISOString(),
-        exportedBy: "PCMS Field Data Collector",
-        version: "1.0",
-        totalRecords: rows.length,
-        includesPhotos: true,
-        records: rows.map(row => ({
-          ...row,
-          id: row.id.toString() // Ensure ID is string for JSON
-        }))
-      };
-      
-      const jsonStr = JSON.stringify(completeBackup, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const timestamp = new Date().toISOString().split('T')[0];
-      a.download = `PCMS_Complete_Backup_${timestamp}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      setStatus({ type: 'success', msg: `Saved complete backup with photos: ${rows.length} records` });
-    } catch (err) {
-      setStatus({ type: 'error', msg: 'Backup error: ' + err.message });
-    }
-  };
-
-  const loadRawData = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
-        
-        if (data.records && Array.isArray(data.records)) {
-          // Restore the data
-          setRows(data.records.map(record => ({
-            ...createEmptyRow(),
-            ...record,
-            id: Date.now() + Math.random() // Generate new IDs
-          })));
-          
-          setStatus({ 
-            type: 'success', 
-            msg: `Loaded ${data.records.length} records from ${data.exportDate || 'backup'}` 
-          });
-        } else {
-          throw new Error('Invalid data format');
-        }
-      } catch (err) {
-        setStatus({ type: 'error', msg: 'Load error: ' + err.message });
-      }
-    };
-    reader.readAsText(file);
   };
 
   const renderCell = (row, column) => {
@@ -1159,14 +988,8 @@ function App() {
       <div className="controls">
         <button className="btn" onClick={addNewRow}>+ Add Row</button>
         <button className="btn btn-secondary" onClick={exportToExcel}>📊 Export to Excel</button>
-        <button className="btn btn-secondary" onClick={generatePDFs}>📄 Generate {rows.length} PDF(s)</button>
+        <button className="btn btn-secondary" onClick={generatePDFs}>📄 Download PDFs</button>
         <button className="btn btn-secondary" onClick={generateAndUploadPDFs}>☁️ Upload to Dropbox</button>
-        <button className="btn btn-secondary" onClick={saveRawData}>💾 Save Data (Metadata)</button>
-        <button className="btn btn-secondary" onClick={saveRawDataWithPhotos}>📸 Save Data (With Photos)</button>
-        <label className="btn btn-secondary">
-          📂 Load Data
-          <input type="file" accept=".json" onChange={e => e.target.files[0] && loadRawData(e.target.files[0])} style={{display:'none'}} />
-        </label>
       </div>
 
       <div className="spreadsheet-container">

@@ -73,36 +73,6 @@ h1 {
   align-items: center;
 }
 
-.control-group {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.control-group label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gold);
-  white-space: nowrap;
-}
-
-select, input[type="date"], input[type="text"] {
-  padding: 10px 15px;
-  border: 2px solid rgba(255, 214, 10, 0.3);
-  border-radius: 8px;
-  background: rgba(13, 27, 42, 0.8);
-  color: var(--cream);
-  font-size: 14px;
-  font-family: 'Work Sans', sans-serif;
-  transition: all 0.3s;
-}
-
-select:focus, input:focus {
-  outline: none;
-  border-color: var(--gold);
-  background: rgba(13, 27, 42, 0.95);
-}
-
 .btn {
   padding: 10px 24px;
   border: 2px solid var(--gold);
@@ -140,7 +110,6 @@ select:focus, input:focus {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  min-width: 2200px;
   font-family: 'IBM Plex Mono', monospace;
 }
 
@@ -161,6 +130,7 @@ select:focus, input:focus {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  min-width: 120px;
 }
 
 .spreadsheet td {
@@ -199,19 +169,20 @@ select:focus, input:focus {
 
 .photo-cell {
   padding: 8px !important;
-  min-width: 150px;
+  min-width: 180px;
 }
 
-.photo-upload {
+.photo-actions {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  margin-bottom: 8px;
 }
 
-.photo-upload-btn {
-  padding: 6px 10px;
+.photo-btn {
+  flex: 1;
+  padding: 8px 6px;
   background: rgba(45, 106, 63, 0.5);
-  border: 2px dashed rgba(255, 214, 10, 0.5);
+  border: 2px solid rgba(255, 214, 10, 0.5);
   border-radius: 6px;
   color: var(--gold);
   font-size: 11px;
@@ -219,14 +190,15 @@ select:focus, input:focus {
   text-align: center;
   transition: all 0.3s;
   font-family: 'Work Sans', sans-serif;
+  font-weight: 600;
 }
 
-.photo-upload-btn:hover {
+.photo-btn:hover {
   background: rgba(45, 106, 63, 0.7);
   border-style: solid;
 }
 
-.photo-upload input[type="file"] {
+.photo-btn input[type="file"] {
   display: none;
 }
 
@@ -234,7 +206,6 @@ select:focus, input:focus {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  margin-top: 4px;
 }
 
 .photo-thumb {
@@ -274,7 +245,8 @@ select:focus, input:focus {
 .photo-count {
   font-size: 10px;
   color: var(--gold);
-  margin-top: 2px;
+  margin-top: 4px;
+  text-align: center;
 }
 
 .photo-modal {
@@ -319,6 +291,62 @@ select:focus, input:focus {
   font-weight: 700;
 }
 
+.camera-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.camera-view {
+  position: relative;
+  max-width: 90vw;
+  max-height: 70vh;
+}
+
+.camera-view video, .camera-view canvas {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 8px;
+  border: 3px solid var(--gold);
+}
+
+.camera-controls {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.camera-btn {
+  padding: 15px 30px;
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  background: var(--forest);
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.camera-btn:hover {
+  background: var(--moss);
+  transform: scale(1.05);
+}
+
+.camera-btn.capture {
+  background: var(--gold);
+  color: var(--forest);
+}
+
 .add-row-btn {
   margin-top: 15px;
   width: 100%;
@@ -335,13 +363,6 @@ select:focus, input:focus {
 .add-row-btn:hover {
   background: rgba(45, 106, 63, 0.5);
   border-style: solid;
-}
-
-.actions {
-  margin-top: 25px;
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
 }
 
 .status {
@@ -375,24 +396,6 @@ select:focus, input:focus {
   padding: 0 10px;
 }
 
-/* Column widths */
-.col-date { min-width: 110px; }
-.col-customer { min-width: 180px; }
-.col-facility { min-width: 200px; }
-.col-service { min-width: 120px; }
-.col-manufacturer { min-width: 180px; }
-.col-serial { min-width: 150px; }
-.col-reading { min-width: 120px; }
-.col-method { min-width: 140px; }
-.col-notes { min-width: 250px; }
-.col-tech { min-width: 130px; }
-.col-units { min-width: 80px; }
-.col-pipe { min-width: 100px; }
-.col-size { min-width: 90px; }
-.col-flow { min-width: 110px; }
-.col-level { min-width: 100px; }
-.col-photos { min-width: 150px; }
-
 @media (max-width: 1200px) {
   .spreadsheet {
     font-size: 11px;
@@ -406,7 +409,7 @@ select:focus, input:focus {
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 const EQUIPMENT_DB = [
   {"serial":"211108873","customer":"Staff WSC","facility":"Eastland County Water Supply","manufacturer":"Octave Master Meter 6\""},
@@ -418,13 +421,53 @@ const EQUIPMENT_DB = [
   {"serial":"73701","customer":"New Braunfels Utilities","facility":"Sam McKenzie Effluent","manufacturer":"Greyline OCF 5.0"}
 ];
 
+// Column visibility by service type
+const COLUMN_CONFIG = {
+  "Closed pipe": ["date", "customer", "facility", "serviceType", "manufacturer", "serialNumber", "meterReading", "method", "pipeMaterial", "pipeSize", "units", "validatingFlow", "customerFlow", "photos", "notes", "testedBy"],
+  "Open Channel": ["date", "customer", "facility", "serviceType", "manufacturer", "serialNumber", "method", "primaryDevice", "units", "levelChannel", "levelMeter", "photos", "notes", "testedBy"],
+  "Chart Recorder": ["date", "customer", "facility", "serviceType", "manufacturer", "serialNumber", "primaryDevice", "units", "valueMeter", "valueChart", "photos", "notes", "testedBy"],
+  "Loop Test": ["date", "customer", "facility", "serviceType", "manufacturer", "serialNumber", "method", "lowDesired", "lowMeasured", "highDesired", "highMeasured", "photos", "notes", "testedBy"],
+  "Startup": ["date", "customer", "facility", "serviceType", "manufacturer", "serialNumber", "method", "primaryDevice", "units", "photos", "notes", "testedBy"]
+};
+
+const COLUMN_LABELS = {
+  date: "Date",
+  customer: "Customer",
+  facility: "Facility/Location",
+  serviceType: "Service Type",
+  manufacturer: "Manufacturer/Model",
+  serialNumber: "Serial Number",
+  meterReading: "Meter Reading",
+  method: "Method",
+  pipeMaterial: "Pipe Material",
+  pipeSize: "Pipe Size",
+  primaryDevice: "Primary Device",
+  units: "Units",
+  validatingFlow: "Validating Flow",
+  customerFlow: "Customer Flow",
+  levelChannel: "Level Channel",
+  levelMeter: "Level Meter",
+  valueMeter: "Value on Meter",
+  valueChart: "Value on Chart",
+  lowDesired: "Low Desired (mA)",
+  lowMeasured: "Low Measured (mA)",
+  highDesired: "High Desired (mA)",
+  highMeasured: "High Measured (mA)",
+  photos: "📸 Photos",
+  notes: "Notes",
+  testedBy: "Tested By"
+};
+
 function App() {
   const [rows, setRows] = useState([]);
   const [status, setStatus] = useState(null);
   const [photoModal, setPhotoModal] = useState(null);
+  const [cameraModal, setCameraModal] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const streamRef = useRef(null);
 
   useEffect(() => {
-    // Initialize with one empty row
     addNewRow();
   }, []);
 
@@ -433,32 +476,21 @@ function App() {
     date: new Date().toISOString().split('T')[0],
     customer: "",
     facility: "",
-    waterWastewater: "",
     serviceType: "Closed pipe",
     manufacturer: "",
     serialNumber: "",
     meterReading: "",
     method: "Ultrasonic",
-    calibrationAdj: "No calibration adjustments performed, verification only.",
-    programmingChanges: "No programming changes made",
     pipeMaterial: "",
     pipeSize: "",
     primaryDevice: "",
-    range: "",
     units: "GPM",
-    measurementType: "GPM",
-    validatingFlow1: "",
-    customerFlow1: "",
-    validatingFlow2: "",
-    customerFlow2: "",
-    levelChannel1: "",
-    levelMeter1: "",
-    levelChannel2: "",
-    levelMeter2: "",
-    valueMeter1: "",
-    valueChart1: "",
-    valueMeter2: "",
-    valueChart2: "",
+    validatingFlow: "",
+    customerFlow: "",
+    levelChannel: "",
+    levelMeter: "",
+    valueMeter: "",
+    valueChart: "",
     lowDesired: "",
     lowMeasured: "",
     highDesired: "",
@@ -525,6 +557,59 @@ function App() {
     });
   };
 
+  const startCamera = async (rowId) => {
+    setCameraModal(rowId);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } // Use back camera on mobile
+      });
+      streamRef.current = stream;
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 100);
+    } catch (err) {
+      setStatus({ type: 'error', msg: 'Camera access denied: ' + err.message });
+      setCameraModal(null);
+    }
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0);
+    
+    const photoData = canvas.toDataURL('image/jpeg', 0.8);
+    
+    setRows(prevRows => prevRows.map(row => {
+      if (row.id === cameraModal) {
+        return {
+          ...row,
+          photos: [...row.photos, {
+            id: Date.now() + Math.random(),
+            data: photoData,
+            name: `photo_${new Date().getTime()}.jpg`
+          }]
+        };
+      }
+      return row;
+    }));
+    
+    setStatus({ type: 'success', msg: 'Photo captured!' });
+  };
+
+  const closeCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    setCameraModal(null);
+  };
+
   const removePhoto = (rowId, photoId) => {
     setRows(rows.map(row => {
       if (row.id === rowId) {
@@ -537,28 +622,27 @@ function App() {
     }));
   };
 
+  const getVisibleColumns = (serviceType) => {
+    return COLUMN_CONFIG[serviceType] || COLUMN_CONFIG["Closed pipe"];
+  };
+
   const exportToExcel = () => {
     try {
+      const allColumns = ["date", "customer", "facility", "serviceType", "manufacturer", "serialNumber", 
+                         "meterReading", "method", "pipeMaterial", "pipeSize", "primaryDevice", "units", 
+                         "validatingFlow", "customerFlow", "levelChannel", "levelMeter", "valueMeter", 
+                         "valueChart", "lowDesired", "lowMeasured", "highDesired", "highMeasured", 
+                         "notes", "testedBy"];
+      
       const csvContent = [
-        // Header row
-        ["Date", "Customer", "Facility/Location", "Water/Wastewater", "Service Type", "Manufacturer/Model", 
-         "Serial Number", "Meter Reading", "Method of Verification", "Calibration Adjustments", 
-         "Programming Changes", "Pipe Material", "Pipe Size (O.D.)", "Primary Device Type", "Range", 
-         "Units", "Measurement Type", "Flow Rate - Validating Meter", "Customer Meter - Flow Rate",
-         "Flow Rate - Validating Meter", "Customer Meter - Flow Rate", "Level in Channel", "Level on Meter",
-         "Level in Channel", "Level on Meter", "Value on Meter", "Value on Chart Recorder",
-         "Value on Meter", "Value on Chart Recorder", "Desired Output (Low - mA)", "Measured Output (Low - mA)",
-         "Desired Output (High - mA)", "Measured Output (High - mA)", "Notes", "Tested by", "Photo Count"],
-        // Data rows
+        ["Date", "Customer", "Facility/Location", "Service Type", "Manufacturer/Model", "Serial Number",
+         "Meter Reading", "Method", "Pipe Material", "Pipe Size", "Primary Device", "Units",
+         "Validating Flow", "Customer Flow", "Level Channel", "Level Meter", "Value Meter",
+         "Value Chart", "Low Desired", "Low Measured", "High Desired", "High Measured",
+         "Notes", "Tested By", "Photo Count"],
         ...rows.map(row => [
-          row.date, row.customer, row.facility, row.waterWastewater, row.serviceType,
-          row.manufacturer, row.serialNumber, row.meterReading, row.method, row.calibrationAdj,
-          row.programmingChanges, row.pipeMaterial, row.pipeSize, row.primaryDevice, row.range,
-          row.units, row.measurementType, row.validatingFlow1, row.customerFlow1,
-          row.validatingFlow2, row.customerFlow2, row.levelChannel1, row.levelMeter1,
-          row.levelChannel2, row.levelMeter2, row.valueMeter1, row.valueChart1,
-          row.valueMeter2, row.valueChart2, row.lowDesired, row.lowMeasured,
-          row.highDesired, row.highMeasured, row.notes, row.testedBy, row.photos.length
+          ...allColumns.map(col => row[col] || ""),
+          row.photos.length
         ])
       ].map(row => row.join('\t')).join('\n');
 
@@ -580,10 +664,9 @@ function App() {
     try {
       const { jsPDF } = window.jspdf;
       
-      rows.forEach((row, index) => {
+      rows.forEach((row) => {
         const doc = new jsPDF();
         
-        // Header
         doc.setFontSize(18);
         doc.setTextColor(26, 77, 46);
         doc.text("YOUR GO-TO FLOW PROS", 105, 20, { align: "center" });
@@ -591,38 +674,23 @@ function App() {
         doc.setTextColor(0, 0, 0);
         doc.text("Flow Measurement Testing & Calibration Services", 105, 27, { align: "center" });
         
-        // Title
         doc.setFontSize(14);
         doc.text(`${row.serviceType} Certificate`, 105, 40, { align: "center" });
         
-        // Data table
+        const visibleColumns = getVisibleColumns(row.serviceType);
+        const tableData = visibleColumns
+          .filter(col => col !== 'photos' && row[col])
+          .map(col => [COLUMN_LABELS[col], row[col]]);
+        
         doc.autoTable({
           startY: 50,
           head: [['Field', 'Value']],
-          body: [
-            ['Date', row.date],
-            ['Customer', row.customer],
-            ['Facility', row.facility],
-            ['Manufacturer', row.manufacturer],
-            ['Serial Number', row.serialNumber],
-            ['Meter Reading', row.meterReading],
-            ['Method', row.method],
-            ['Pipe Material', row.pipeMaterial],
-            ['Pipe Size', row.pipeSize],
-            ['Primary Device', row.primaryDevice],
-            ['Units', row.units],
-            ['Validating Flow', row.validatingFlow1],
-            ['Customer Flow', row.customerFlow1],
-            ['Notes', row.notes],
-            ['Tested By', row.testedBy],
-            ['Photos Attached', `${row.photos.length} photo(s)`]
-          ].filter(([_, v]) => v),
+          body: tableData,
           theme: 'grid',
           headStyles: { fillColor: [26, 77, 46], textColor: [255, 214, 10] },
           styles: { fontSize: 9 }
         });
         
-        // Add photos if any
         if (row.photos.length > 0) {
           let yPos = doc.lastAutoTable.finalY + 15;
           doc.setFontSize(12);
@@ -637,7 +705,7 @@ function App() {
             try {
               doc.addImage(photo.data, 'JPEG', 20, yPos, 80, 60);
               doc.setFontSize(9);
-              doc.text(`Photo ${i + 1}: ${photo.name}`, 105, yPos + 5);
+              doc.text(`Photo ${i + 1}`, 105, yPos + 5);
               yPos += 70;
             } catch (e) {
               console.log("Error adding photo:", e);
@@ -645,7 +713,6 @@ function App() {
           });
         }
         
-        // Footer
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i);
@@ -656,9 +723,125 @@ function App() {
         doc.save(`${row.customer}_${row.serialNumber}_${row.date}.pdf`);
       });
       
-      setStatus({ type: 'success', msg: `Generated ${rows.length} certificates with photos!` });
+      setStatus({ type: 'success', msg: `Generated ${rows.length} certificates!` });
     } catch (err) {
       setStatus({ type: 'error', msg: 'PDF error: ' + err.message });
+    }
+  };
+
+  const renderCell = (row, column) => {
+    switch(column) {
+      case 'date':
+        return <input type="date" value={row.date} onChange={e => updateRow(row.id, 'date', e.target.value)} />;
+      
+      case 'serviceType':
+        return (
+          <select value={row.serviceType} onChange={e => updateRow(row.id, 'serviceType', e.target.value)}>
+            <option>Closed pipe</option>
+            <option>Open Channel</option>
+            <option>Chart Recorder</option>
+            <option>Loop Test</option>
+            <option>Startup</option>
+          </select>
+        );
+      
+      case 'serialNumber':
+        return (
+          <input 
+            type="text" 
+            value={row.serialNumber} 
+            onChange={e => autofillFromSerial(row.id, e.target.value)} 
+            placeholder="Serial (autofills)" 
+            list="serialList"
+          />
+        );
+      
+      case 'method':
+        return (
+          <select value={row.method} onChange={e => updateRow(row.id, 'method', e.target.value)}>
+            <option>Ultrasonic</option>
+            <option>Doppler</option>
+            <option>Level Measurement</option>
+            <option>Flow Meter Comparison</option>
+            <option>New Meter Startup</option>
+          </select>
+        );
+      
+      case 'pipeMaterial':
+        return (
+          <select value={row.pipeMaterial} onChange={e => updateRow(row.id, 'pipeMaterial', e.target.value)}>
+            <option value="">-</option>
+            <option>PVC</option>
+            <option>Ductile Iron</option>
+            <option>Carbon Steel</option>
+            <option>Stainless Steel</option>
+            <option>Copper</option>
+          </select>
+        );
+      
+      case 'units':
+        return (
+          <select value={row.units} onChange={e => updateRow(row.id, 'units', e.target.value)}>
+            <option>GPM</option>
+            <option>MGD</option>
+            <option>CFS</option>
+            <option>Inches</option>
+            <option>Feet</option>
+          </select>
+        );
+      
+      case 'photos':
+        return (
+          <div className="photo-cell">
+            <div className="photo-actions">
+              <button className="photo-btn" onClick={() => startCamera(row.id)}>
+                📷 Camera
+              </button>
+              <label className="photo-btn">
+                📁 Upload
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  multiple 
+                  onChange={e => handlePhotoUpload(row.id, e.target.files)}
+                />
+              </label>
+            </div>
+            {row.photos.length > 0 && (
+              <>
+                <div className="photo-thumbnails">
+                  {row.photos.map(photo => (
+                    <div key={photo.id} className="photo-thumb" onClick={() => setPhotoModal(photo.data)}>
+                      <img src={photo.data} alt="Field" />
+                      <button 
+                        className="photo-thumb-remove" 
+                        onClick={(e) => {e.stopPropagation(); removePhoto(row.id, photo.id);}}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="photo-count">{row.photos.length} photo(s)</div>
+              </>
+            )}
+          </div>
+        );
+      
+      case 'validatingFlow':
+      case 'customerFlow':
+      case 'levelChannel':
+      case 'levelMeter':
+      case 'valueMeter':
+      case 'valueChart':
+      case 'lowDesired':
+      case 'lowMeasured':
+      case 'highDesired':
+      case 'highMeasured':
+        return <input type="number" step="0.01" value={row[column]} onChange={e => updateRow(row.id, column, e.target.value)} />;
+      
+      default:
+        return <input type="text" value={row[column]} onChange={e => updateRow(row.id, column, e.target.value)} placeholder={COLUMN_LABELS[column]} />;
     }
   };
 
@@ -666,7 +849,7 @@ function App() {
     <div className="app">
       <header>
         <h1>📸 PCMS Field Data Collector</h1>
-        <div className="subtitle">Spreadsheet Entry with Photo Attachments | {EQUIPMENT_DB.length} Equipment Records</div>
+        <div className="subtitle">Dynamic Columns + Camera Support | {EQUIPMENT_DB.length} Equipment Records</div>
       </header>
 
       {status && (
@@ -687,137 +870,35 @@ function App() {
           <thead>
             <tr>
               <th className="row-number">#</th>
-              <th className="col-date">Date</th>
-              <th className="col-customer">Customer</th>
-              <th className="col-facility">Facility/Location</th>
-              <th className="col-service">Service Type</th>
-              <th className="col-manufacturer">Manufacturer/Model</th>
-              <th className="col-serial">Serial Number</th>
-              <th className="col-reading">Meter Reading</th>
-              <th className="col-method">Method</th>
-              <th className="col-pipe">Pipe Material</th>
-              <th className="col-size">Pipe Size</th>
-              <th className="col-facility">Primary Device</th>
-              <th className="col-units">Units</th>
-              <th className="col-flow">Validating Flow</th>
-              <th className="col-flow">Customer Flow</th>
-              <th className="col-level">Level Channel</th>
-              <th className="col-level">Level Meter</th>
-              <th className="col-photos">📸 Photos</th>
-              <th className="col-notes">Notes</th>
-              <th className="col-tech">Tested By</th>
+              {rows.length > 0 && getVisibleColumns(rows[0].serviceType).map(col => (
+                <th key={col}>{COLUMN_LABELS[col]}</th>
+              ))}
               <th className="row-number">✕</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
-              <tr key={row.id}>
-                <td className="row-number">{index + 1}</td>
-                <td><input type="date" value={row.date} onChange={e => updateRow(row.id, 'date', e.target.value)} /></td>
-                <td><input type="text" value={row.customer} onChange={e => updateRow(row.id, 'customer', e.target.value)} placeholder="Customer name" /></td>
-                <td><input type="text" value={row.facility} onChange={e => updateRow(row.id, 'facility', e.target.value)} placeholder="Facility" /></td>
-                <td>
-                  <select value={row.serviceType} onChange={e => updateRow(row.id, 'serviceType', e.target.value)}>
-                    <option>Closed pipe</option>
-                    <option>Open Channel</option>
-                    <option>Chart Recorder</option>
-                    <option>Loop Test</option>
-                    <option>Startup</option>
-                  </select>
-                </td>
-                <td><input type="text" value={row.manufacturer} onChange={e => updateRow(row.id, 'manufacturer', e.target.value)} placeholder="Manufacturer" /></td>
-                <td>
-                  <input 
-                    type="text" 
-                    value={row.serialNumber} 
-                    onChange={e => autofillFromSerial(row.id, e.target.value)} 
-                    placeholder="Serial (autofills)" 
-                    list="serialList"
-                  />
-                  <datalist id="serialList">
-                    {EQUIPMENT_DB.map(e => <option key={e.serial} value={e.serial} />)}
-                  </datalist>
-                </td>
-                <td><input type="text" value={row.meterReading} onChange={e => updateRow(row.id, 'meterReading', e.target.value)} placeholder="Reading" /></td>
-                <td>
-                  <select value={row.method} onChange={e => updateRow(row.id, 'method', e.target.value)}>
-                    <option>Ultrasonic</option>
-                    <option>Doppler</option>
-                    <option>Level Measurement</option>
-                    <option>Flow Meter Comparison</option>
-                    <option>New Meter Startup</option>
-                  </select>
-                </td>
-                <td>
-                  <select value={row.pipeMaterial} onChange={e => updateRow(row.id, 'pipeMaterial', e.target.value)}>
-                    <option value="">-</option>
-                    <option>PVC</option>
-                    <option>Ductile Iron</option>
-                    <option>Carbon Steel</option>
-                    <option>Stainless Steel</option>
-                    <option>Copper</option>
-                  </select>
-                </td>
-                <td><input type="text" value={row.pipeSize} onChange={e => updateRow(row.id, 'pipeSize', e.target.value)} placeholder='e.g. 4.8' /></td>
-                <td><input type="text" value={row.primaryDevice} onChange={e => updateRow(row.id, 'primaryDevice', e.target.value)} placeholder="Primary device" /></td>
-                <td>
-                  <select value={row.units} onChange={e => updateRow(row.id, 'units', e.target.value)}>
-                    <option>GPM</option>
-                    <option>MGD</option>
-                    <option>CFS</option>
-                    <option>Inches</option>
-                    <option>Feet</option>
-                  </select>
-                </td>
-                <td><input type="number" step="0.01" value={row.validatingFlow1} onChange={e => updateRow(row.id, 'validatingFlow1', e.target.value)} placeholder="Val. flow" /></td>
-                <td><input type="number" step="0.01" value={row.customerFlow1} onChange={e => updateRow(row.id, 'customerFlow1', e.target.value)} placeholder="Cust. flow" /></td>
-                <td><input type="number" step="0.001" value={row.levelChannel1} onChange={e => updateRow(row.id, 'levelChannel1', e.target.value)} placeholder="Channel" /></td>
-                <td><input type="number" step="0.001" value={row.levelMeter1} onChange={e => updateRow(row.id, 'levelMeter1', e.target.value)} placeholder="Meter" /></td>
-                <td className="photo-cell">
-                  <div className="photo-upload">
-                    <label className="photo-upload-btn">
-                      📸 Add Photos
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        multiple 
-                        onChange={e => handlePhotoUpload(row.id, e.target.files)}
-                      />
-                    </label>
-                    {row.photos.length > 0 && (
-                      <>
-                        <div className="photo-thumbnails">
-                          {row.photos.map(photo => (
-                            <div key={photo.id} className="photo-thumb" onClick={() => setPhotoModal(photo.data)}>
-                              <img src={photo.data} alt="Field photo" />
-                              <button 
-                                className="photo-thumb-remove" 
-                                onClick={(e) => {e.stopPropagation(); removePhoto(row.id, photo.id);}}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="photo-count">{row.photos.length} photo(s)</div>
-                      </>
-                    )}
-                  </div>
-                </td>
-                <td><input type="text" value={row.notes} onChange={e => updateRow(row.id, 'notes', e.target.value)} placeholder="Notes" /></td>
-                <td><input type="text" value={row.testedBy} onChange={e => updateRow(row.id, 'testedBy', e.target.value)} /></td>
-                <td className="row-number"><button onClick={() => deleteRow(row.id)} style={{background:'none',border:'none',color:'#ff4444',cursor:'pointer',fontSize:'16px'}}>✕</button></td>
-              </tr>
-            ))}
+            {rows.map((row, index) => {
+              const visibleCols = getVisibleColumns(row.serviceType);
+              return (
+                <tr key={row.id}>
+                  <td className="row-number">{index + 1}</td>
+                  {visibleCols.map(col => (
+                    <td key={col}>{renderCell(row, col)}</td>
+                  ))}
+                  <td className="row-number">
+                    <button onClick={() => deleteRow(row.id)} style={{background:'none',border:'none',color:'#ff4444',cursor:'pointer',fontSize:'16px'}}>✕</button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         
+        <datalist id="serialList">
+          {EQUIPMENT_DB.map(e => <option key={e.serial} value={e.serial} />)}
+        </datalist>
+        
         <button className="add-row-btn" onClick={addNewRow}>+ Add New Row</button>
-      </div>
-
-      <div className="actions">
-        <button className="btn" onClick={exportToExcel}>📊 Export to Excel/TSV</button>
-        <button className="btn" onClick={generatePDFs}>📄 Generate {rows.length} Certificate(s) with Photos</button>
       </div>
 
       {photoModal && (
@@ -825,6 +906,19 @@ function App() {
           <div className="photo-modal-content">
             <button className="photo-modal-close" onClick={() => setPhotoModal(null)}>✕</button>
             <img src={photoModal} alt="Full size" />
+          </div>
+        </div>
+      )}
+
+      {cameraModal && (
+        <div className="camera-modal">
+          <div className="camera-view">
+            <video ref={videoRef} autoPlay playsInline style={{display: 'block'}}></video>
+            <canvas ref={canvasRef} style={{display: 'none'}}></canvas>
+          </div>
+          <div className="camera-controls">
+            <button className="camera-btn capture" onClick={capturePhoto}>📸 Capture</button>
+            <button className="camera-btn" onClick={closeCamera}>✕ Cancel</button>
           </div>
         </div>
       )}

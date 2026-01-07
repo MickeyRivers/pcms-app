@@ -3,287 +3,836 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>PCMS Field Collector</title>
+<title>PCMS Field Data Collector</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0e27;color:#fff;min-height:100vh}
-.container{max-width:1400px;margin:0 auto;padding:20px}
-.header{background:linear-gradient(135deg,#1a4d2e 0%,#4a7c59 100%);padding:40px;border-radius:16px;margin-bottom:30px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
-.header h1{font-size:2.8rem;color:#ffd60a;margin-bottom:10px;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
-.header p{font-size:1.1rem;opacity:0.95}
-.tabs{display:flex;gap:12px;margin-bottom:30px}
-.tab{padding:14px 28px;background:#1a1d3a;border:2px solid #2a2f5a;border-radius:10px;cursor:pointer;font-weight:600;transition:all 0.3s;font-size:15px}
-.tab:hover{background:#2a2f5a;transform:translateY(-2px)}
-.tab.active{background:#1a4d2e;border-color:#ffd60a;color:#ffd60a}
-.content{background:#1a1d3a;padding:35px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.3)}
-.search{width:100%;padding:16px;border:2px solid #2a2f5a;border-radius:10px;background:#0a0e27;color:#fff;font-size:16px;margin-bottom:25px}
-.search:focus{outline:none;border-color:#ffd60a}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;max-height:650px;overflow-y:auto;padding-right:8px}
-.card{background:#0a0e27;padding:18px;border-radius:12px;border:2px solid #2a2f5a;cursor:pointer;transition:all 0.3s}
-.card:hover{border-color:#1a4d2e;transform:translateX(6px)}
-.card.selected{background:#1a4d2e;border-color:#ffd60a}
-.card-title{font-weight:700;color:#ffd60a;font-size:16px;margin-bottom:10px}
-.card-text{font-size:14px;opacity:0.85;margin:4px 0}
-.form-group{margin-bottom:24px}
-.form-group label{display:block;margin-bottom:10px;font-weight:600;color:#ffd60a;font-size:15px}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:14px;border:2px solid #2a2f5a;border-radius:10px;background:#0a0e27;color:#fff;font-size:15px}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#ffd60a}
-.btn-group{display:flex;gap:16px;margin-top:30px;flex-wrap:wrap}
-.btn{padding:16px 32px;border:none;border-radius:10px;font-weight:600;font-size:16px;cursor:pointer;transition:all 0.3s}
-.btn-primary{background:#1a4d2e;color:#ffd60a;border:2px solid #ffd60a}
-.btn-primary:hover{background:#2d6a3f;transform:scale(1.05)}
-.btn-secondary{background:#2a2f5a;color:#fff;border:2px solid #3a3f6a}
-.btn-secondary:hover{background:#3a3f6a}
-.preview{background:#0a0e27;padding:30px;border-radius:12px;margin-top:25px;border:2px solid #2a2f5a}
-.preview h2,.preview h3{color:#ffd60a;margin-bottom:20px;text-align:center}
-.preview-content{font-size:15px;line-height:2}
-.preview-content p{margin:8px 0}
-.preview-content strong{color:#ffd60a}
-.status{padding:18px;margin:20px 0;border-radius:10px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
-.status.success{background:#1a4d2e;color:#ffd60a;border:2px solid #ffd60a}
-.status.error{background:#8b0000;color:#fff;border:2px solid #ff4444}
-.status button{background:none;border:none;color:inherit;font-size:20px;cursor:pointer;padding:0 10px}
+:root {
+  --forest: #1a4d2e;
+  --moss: #2d6a3f;
+  --gold: #ffd60a;
+  --cream: #fffef7;
+  --slate: #2b2d42;
+  --steel: #8d99ae;
+  --shadow: rgba(0,0,0,0.15);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Work Sans', sans-serif;
+  background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);
+  color: var(--cream);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.app {
+  max-width: 98vw;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--moss) 100%);
+  padding: 30px 40px;
+  border-radius: 16px;
+  margin-bottom: 25px;
+  box-shadow: 0 8px 32px var(--shadow);
+  border: 2px solid rgba(255, 214, 10, 0.2);
+}
+
+h1 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 2.2rem;
+  color: var(--gold);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+  font-size: 1.05rem;
+  opacity: 0.95;
+  font-weight: 400;
+}
+
+.controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.control-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.control-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+select, input[type="date"], input[type="text"] {
+  padding: 10px 15px;
+  border: 2px solid rgba(255, 214, 10, 0.3);
+  border-radius: 8px;
+  background: rgba(13, 27, 42, 0.8);
+  color: var(--cream);
+  font-size: 14px;
+  font-family: 'Work Sans', sans-serif;
+  transition: all 0.3s;
+}
+
+select:focus, input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: rgba(13, 27, 42, 0.95);
+}
+
+.btn {
+  padding: 10px 24px;
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  background: var(--forest);
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: 'Work Sans', sans-serif;
+}
+
+.btn:hover {
+  background: var(--moss);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 214, 10, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(45, 106, 63, 0.3);
+  border-color: rgba(255, 214, 10, 0.5);
+}
+
+.spreadsheet-container {
+  background: rgba(27, 38, 59, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  overflow-x: auto;
+  box-shadow: 0 4px 24px var(--shadow);
+  border: 2px solid rgba(255, 214, 10, 0.2);
+}
+
+.spreadsheet {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 2200px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.spreadsheet thead {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--moss) 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.spreadsheet th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--gold);
+  border: 1px solid rgba(255, 214, 10, 0.3);
+  white-space: nowrap;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.spreadsheet td {
+  padding: 0;
+  border: 1px solid rgba(141, 153, 174, 0.2);
+  background: rgba(13, 27, 42, 0.6);
+}
+
+.spreadsheet input, .spreadsheet select {
+  width: 100%;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  color: var(--cream);
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  transition: background 0.2s;
+}
+
+.spreadsheet input:focus, .spreadsheet select:focus {
+  background: rgba(26, 77, 46, 0.3);
+  outline: none;
+}
+
+.spreadsheet tbody tr:hover {
+  background: rgba(26, 77, 46, 0.15);
+}
+
+.row-number {
+  background: rgba(45, 106, 63, 0.3) !important;
+  text-align: center;
+  font-weight: 700;
+  color: var(--gold);
+  min-width: 50px;
+}
+
+.photo-cell {
+  padding: 8px !important;
+  min-width: 150px;
+}
+
+.photo-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.photo-upload-btn {
+  padding: 6px 10px;
+  background: rgba(45, 106, 63, 0.5);
+  border: 2px dashed rgba(255, 214, 10, 0.5);
+  border-radius: 6px;
+  color: var(--gold);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s;
+  font-family: 'Work Sans', sans-serif;
+}
+
+.photo-upload-btn:hover {
+  background: rgba(45, 106, 63, 0.7);
+  border-style: solid;
+}
+
+.photo-upload input[type="file"] {
+  display: none;
+}
+
+.photo-thumbnails {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.photo-thumb {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 214, 10, 0.3);
+  cursor: pointer;
+}
+
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-thumb-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.photo-count {
+  font-size: 10px;
+  color: var(--gold);
+  margin-top: 2px;
+}
+
+.photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 40px;
+}
+
+.photo-modal-content {
+  max-width: 90vw;
+  max-height: 90vh;
+  position: relative;
+}
+
+.photo-modal-content img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.photo-modal-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: var(--gold);
+  color: var(--forest);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.add-row-btn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 12px;
+  background: rgba(45, 106, 63, 0.3);
+  border: 2px dashed rgba(255, 214, 10, 0.5);
+  color: var(--gold);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.add-row-btn:hover {
+  background: rgba(45, 106, 63, 0.5);
+  border-style: solid;
+}
+
+.actions {
+  margin-top: 25px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.status {
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status.success {
+  background: rgba(26, 77, 46, 0.8);
+  border: 2px solid var(--gold);
+  color: var(--gold);
+}
+
+.status.error {
+  background: rgba(139, 0, 0, 0.8);
+  border: 2px solid #ff4444;
+  color: #fff;
+}
+
+.status button {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+/* Column widths */
+.col-date { min-width: 110px; }
+.col-customer { min-width: 180px; }
+.col-facility { min-width: 200px; }
+.col-service { min-width: 120px; }
+.col-manufacturer { min-width: 180px; }
+.col-serial { min-width: 150px; }
+.col-reading { min-width: 120px; }
+.col-method { min-width: 140px; }
+.col-notes { min-width: 250px; }
+.col-tech { min-width: 130px; }
+.col-units { min-width: 80px; }
+.col-pipe { min-width: 100px; }
+.col-size { min-width: 90px; }
+.col-flow { min-width: 110px; }
+.col-level { min-width: 100px; }
+.col-photos { min-width: 150px; }
+
+@media (max-width: 1200px) {
+  .spreadsheet {
+    font-size: 11px;
+  }
+  .spreadsheet th {
+    font-size: 10px;
+  }
+}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useMemo}=React;
+const { useState, useEffect } = React;
 
-const ASSETS=[{"serial":"211108873","customer":"Staff WSC","facility":"Eastland County Water Supply","manufacturer":"Octave Master Meter 6\"","certificateType":"CLOSED_PIPE"},{"serial":"S16317668","customer":"Staff WSC","facility":"La Casa","manufacturer":"Khrone WATERFLUX 3070 C","certificateType":"CLOSED_PIPE"},{"serial":"221100217","customer":"Staff WSC","facility":"Master Meter","manufacturer":"Octave Master Meter 6\"","certificateType":"CLOSED_PIPE"},{"serial":"74453","customer":"West Travis County PUA","facility":"Plant 1 & 2 Final","manufacturer":"Greyline OCF 5","certificateType":"OPEN_CHANNEL","primaryDevice":"60-Degree V-Notch Weir"},{"serial":"N1F1887T","customer":"West Travis County PUA","facility":"CCNG Raw at Spanish Oaks","manufacturer":"Fuji Delta C","certificateType":"CLOSED_PIPE"},{"serial":"R3060716000","customer":"New Braunfels Utilities","facility":"Weltner Rd. Pumps 1, 2, 3, 4, 5","manufacturer":"E&H Promag 400","certificateType":"CLOSED_PIPE"}];
+const EQUIPMENT_DB = [
+  {"serial":"211108873","customer":"Staff WSC","facility":"Eastland County Water Supply","manufacturer":"Octave Master Meter 6\""},
+  {"serial":"S16317668","customer":"Staff WSC","facility":"La Casa","manufacturer":"Khrone WATERFLUX 3070 C"},
+  {"serial":"221100217","customer":"Staff WSC","facility":"Master Meter","manufacturer":"Octave Master Meter 6\""},
+  {"serial":"74453","customer":"West Travis County PUA","facility":"Plant 1 & 2 Final","manufacturer":"Greyline OCF 5"},
+  {"serial":"N1F1887T","customer":"West Travis County PUA","facility":"CCNG Raw at Spanish Oaks","manufacturer":"Fuji Delta C"},
+  {"serial":"R3060716000","customer":"New Braunfels Utilities","facility":"Weltner Rd. Pumps","manufacturer":"E&H Promag 400"},
+  {"serial":"73701","customer":"New Braunfels Utilities","facility":"Sam McKenzie Effluent","manufacturer":"Greyline OCF 5.0"}
+];
 
-const TYPES={
-CLOSED_PIPE:{name:"Closed Pipe Test",fields:["asFound","asLeft","units","meterSize"]},
-OPEN_CHANNEL:{name:"Open Channel Test",fields:["primaryDevice","asFound","asLeft","units"]},
-CHART_RECORDER:{name:"Chart Recorder",fields:["primaryDevice","units"]},
-LOOP_TEST:{name:"Loop Test",fields:["loopTest"]}
-};
+function App() {
+  const [rows, setRows] = useState([]);
+  const [status, setStatus] = useState(null);
+  const [photoModal, setPhotoModal] = useState(null);
 
-function App(){
-const[tab,setTab]=useState("select");
-const[search,setSearch]=useState("");
-const[selected,setSelected]=useState(null);
-const[form,setForm]=useState({});
-const[status,setStatus]=useState(null);
+  useEffect(() => {
+    // Initialize with one empty row
+    addNewRow();
+  }, []);
 
-const filtered=useMemo(()=>{
-if(!search)return ASSETS;
-const s=search.toLowerCase();
-return ASSETS.filter(e=>
-e.serial.toLowerCase().includes(s)||
-e.customer.toLowerCase().includes(s)||
-e.facility.toLowerCase().includes(s)||
-e.manufacturer.toLowerCase().includes(s)
-);
-},[search]);
+  const createEmptyRow = () => ({
+    id: Date.now() + Math.random(),
+    date: new Date().toISOString().split('T')[0],
+    customer: "",
+    facility: "",
+    waterWastewater: "",
+    serviceType: "Closed pipe",
+    manufacturer: "",
+    serialNumber: "",
+    meterReading: "",
+    method: "Ultrasonic",
+    calibrationAdj: "No calibration adjustments performed, verification only.",
+    programmingChanges: "No programming changes made",
+    pipeMaterial: "",
+    pipeSize: "",
+    primaryDevice: "",
+    range: "",
+    units: "GPM",
+    measurementType: "GPM",
+    validatingFlow1: "",
+    customerFlow1: "",
+    validatingFlow2: "",
+    customerFlow2: "",
+    levelChannel1: "",
+    levelMeter1: "",
+    levelChannel2: "",
+    levelMeter2: "",
+    valueMeter1: "",
+    valueChart1: "",
+    valueMeter2: "",
+    valueChart2: "",
+    lowDesired: "",
+    lowMeasured: "",
+    highDesired: "",
+    highMeasured: "",
+    notes: "",
+    testedBy: "Mick Bartlett",
+    photos: []
+  });
 
-const selectEquip=(eq)=>{
-setSelected(eq);
-setForm({
-serial:eq.serial,
-customer:eq.customer,
-facility:eq.facility,
-manufacturer:eq.manufacturer,
-certificateType:eq.certificateType,
-primaryDevice:eq.primaryDevice||"",
-asFound:"",
-asLeft:"",
-units:"GPM",
-meterSize:"",
-testDate:new Date().toISOString().split('T')[0],
-technicianName:"",
-comments:""
-});
-setTab("form");
-};
+  const addNewRow = () => {
+    setRows([...rows, createEmptyRow()]);
+  };
 
-const genPDF=()=>{
-try{
-const{jsPDF}=window.jspdf;
-const doc=new jsPDF();
-const type=TYPES[form.certificateType];
+  const updateRow = (id, field, value) => {
+    setRows(rows.map(row => 
+      row.id === id ? { ...row, [field]: value } : row
+    ));
+  };
 
-doc.setFontSize(20);
-doc.setTextColor(26,77,46);
-doc.text("YOUR GO-TO FLOW PROS",105,20,{align:"center"});
-doc.setFontSize(12);
-doc.setTextColor(0,0,0);
-doc.text("Flow Measurement Testing & Calibration",105,28,{align:"center"});
+  const deleteRow = (id) => {
+    if (rows.length > 1) {
+      setRows(rows.filter(row => row.id !== id));
+    }
+  };
 
-doc.setFontSize(16);
-doc.text(type.name,105,45,{align:"center"});
+  const autofillFromSerial = (id, serial) => {
+    const equipment = EQUIPMENT_DB.find(e => e.serial === serial);
+    if (equipment) {
+      setRows(rows.map(row => 
+        row.id === id ? {
+          ...row,
+          serialNumber: serial,
+          customer: equipment.customer,
+          facility: equipment.facility,
+          manufacturer: equipment.manufacturer
+        } : row
+      ));
+    } else {
+      updateRow(id, 'serialNumber', serial);
+    }
+  };
 
-doc.setFontSize(10);
-let y=60;
-doc.text(`Serial: ${form.serial}`,20,y);y+=7;
-doc.text(`Customer: ${form.customer}`,20,y);y+=7;
-doc.text(`Facility: ${form.facility}`,20,y);y+=7;
-doc.text(`Manufacturer: ${form.manufacturer}`,20,y);y+=7;
-doc.text(`Date: ${form.testDate}`,20,y);y+=10;
+  const handlePhotoUpload = (rowId, files) => {
+    const fileArray = Array.from(files);
+    
+    fileArray.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setRows(prevRows => prevRows.map(row => {
+          if (row.id === rowId) {
+            return {
+              ...row,
+              photos: [...row.photos, {
+                id: Date.now() + Math.random(),
+                data: e.target.result,
+                name: file.name
+              }]
+            };
+          }
+          return row;
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
-if(form.primaryDevice){doc.text(`Primary Device: ${form.primaryDevice}`,20,y);y+=7;}
-if(form.asFound){
-doc.text(`As Found: ${form.asFound} ${form.units}`,20,y);y+=7;
-doc.text(`As Left: ${form.asLeft} ${form.units}`,20,y);y+=7;
+  const removePhoto = (rowId, photoId) => {
+    setRows(rows.map(row => {
+      if (row.id === rowId) {
+        return {
+          ...row,
+          photos: row.photos.filter(p => p.id !== photoId)
+        };
+      }
+      return row;
+    }));
+  };
+
+  const exportToExcel = () => {
+    try {
+      const csvContent = [
+        // Header row
+        ["Date", "Customer", "Facility/Location", "Water/Wastewater", "Service Type", "Manufacturer/Model", 
+         "Serial Number", "Meter Reading", "Method of Verification", "Calibration Adjustments", 
+         "Programming Changes", "Pipe Material", "Pipe Size (O.D.)", "Primary Device Type", "Range", 
+         "Units", "Measurement Type", "Flow Rate - Validating Meter", "Customer Meter - Flow Rate",
+         "Flow Rate - Validating Meter", "Customer Meter - Flow Rate", "Level in Channel", "Level on Meter",
+         "Level in Channel", "Level on Meter", "Value on Meter", "Value on Chart Recorder",
+         "Value on Meter", "Value on Chart Recorder", "Desired Output (Low - mA)", "Measured Output (Low - mA)",
+         "Desired Output (High - mA)", "Measured Output (High - mA)", "Notes", "Tested by", "Photo Count"],
+        // Data rows
+        ...rows.map(row => [
+          row.date, row.customer, row.facility, row.waterWastewater, row.serviceType,
+          row.manufacturer, row.serialNumber, row.meterReading, row.method, row.calibrationAdj,
+          row.programmingChanges, row.pipeMaterial, row.pipeSize, row.primaryDevice, row.range,
+          row.units, row.measurementType, row.validatingFlow1, row.customerFlow1,
+          row.validatingFlow2, row.customerFlow2, row.levelChannel1, row.levelMeter1,
+          row.levelChannel2, row.levelMeter2, row.valueMeter1, row.valueChart1,
+          row.valueMeter2, row.valueChart2, row.lowDesired, row.lowMeasured,
+          row.highDesired, row.highMeasured, row.notes, row.testedBy, row.photos.length
+        ])
+      ].map(row => row.join('\t')).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/tab-separated-values' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PCMS_Data_${new Date().toISOString().split('T')[0]}.tsv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      setStatus({ type: 'success', msg: 'Exported to Excel/TSV format!' });
+    } catch (err) {
+      setStatus({ type: 'error', msg: 'Export error: ' + err.message });
+    }
+  };
+
+  const generatePDFs = () => {
+    try {
+      const { jsPDF } = window.jspdf;
+      
+      rows.forEach((row, index) => {
+        const doc = new jsPDF();
+        
+        // Header
+        doc.setFontSize(18);
+        doc.setTextColor(26, 77, 46);
+        doc.text("YOUR GO-TO FLOW PROS", 105, 20, { align: "center" });
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+        doc.text("Flow Measurement Testing & Calibration Services", 105, 27, { align: "center" });
+        
+        // Title
+        doc.setFontSize(14);
+        doc.text(`${row.serviceType} Certificate`, 105, 40, { align: "center" });
+        
+        // Data table
+        doc.autoTable({
+          startY: 50,
+          head: [['Field', 'Value']],
+          body: [
+            ['Date', row.date],
+            ['Customer', row.customer],
+            ['Facility', row.facility],
+            ['Manufacturer', row.manufacturer],
+            ['Serial Number', row.serialNumber],
+            ['Meter Reading', row.meterReading],
+            ['Method', row.method],
+            ['Pipe Material', row.pipeMaterial],
+            ['Pipe Size', row.pipeSize],
+            ['Primary Device', row.primaryDevice],
+            ['Units', row.units],
+            ['Validating Flow', row.validatingFlow1],
+            ['Customer Flow', row.customerFlow1],
+            ['Notes', row.notes],
+            ['Tested By', row.testedBy],
+            ['Photos Attached', `${row.photos.length} photo(s)`]
+          ].filter(([_, v]) => v),
+          theme: 'grid',
+          headStyles: { fillColor: [26, 77, 46], textColor: [255, 214, 10] },
+          styles: { fontSize: 9 }
+        });
+        
+        // Add photos if any
+        if (row.photos.length > 0) {
+          let yPos = doc.lastAutoTable.finalY + 15;
+          doc.setFontSize(12);
+          doc.text("Field Photos:", 20, yPos);
+          yPos += 10;
+          
+          row.photos.forEach((photo, i) => {
+            if (yPos > 250) {
+              doc.addPage();
+              yPos = 20;
+            }
+            try {
+              doc.addImage(photo.data, 'JPEG', 20, yPos, 80, 60);
+              doc.setFontSize(9);
+              doc.text(`Photo ${i + 1}: ${photo.name}`, 105, yPos + 5);
+              yPos += 70;
+            } catch (e) {
+              console.log("Error adding photo:", e);
+            }
+          });
+        }
+        
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(9);
+          doc.text("Certified by YOUR GO-TO FLOW PROS", 105, 285, { align: "center" });
+        }
+        
+        doc.save(`${row.customer}_${row.serialNumber}_${row.date}.pdf`);
+      });
+      
+      setStatus({ type: 'success', msg: `Generated ${rows.length} certificates with photos!` });
+    } catch (err) {
+      setStatus({ type: 'error', msg: 'PDF error: ' + err.message });
+    }
+  };
+
+  return (
+    <div className="app">
+      <header>
+        <h1>📸 PCMS Field Data Collector</h1>
+        <div className="subtitle">Spreadsheet Entry with Photo Attachments | {EQUIPMENT_DB.length} Equipment Records</div>
+      </header>
+
+      {status && (
+        <div className={`status ${status.type}`}>
+          {status.msg}
+          <button onClick={() => setStatus(null)}>✕</button>
+        </div>
+      )}
+
+      <div className="controls">
+        <button className="btn" onClick={addNewRow}>+ Add Row</button>
+        <button className="btn btn-secondary" onClick={exportToExcel}>📊 Export to Excel</button>
+        <button className="btn btn-secondary" onClick={generatePDFs}>📄 Generate {rows.length} PDF(s)</button>
+      </div>
+
+      <div className="spreadsheet-container">
+        <table className="spreadsheet">
+          <thead>
+            <tr>
+              <th className="row-number">#</th>
+              <th className="col-date">Date</th>
+              <th className="col-customer">Customer</th>
+              <th className="col-facility">Facility/Location</th>
+              <th className="col-service">Service Type</th>
+              <th className="col-manufacturer">Manufacturer/Model</th>
+              <th className="col-serial">Serial Number</th>
+              <th className="col-reading">Meter Reading</th>
+              <th className="col-method">Method</th>
+              <th className="col-pipe">Pipe Material</th>
+              <th className="col-size">Pipe Size</th>
+              <th className="col-facility">Primary Device</th>
+              <th className="col-units">Units</th>
+              <th className="col-flow">Validating Flow</th>
+              <th className="col-flow">Customer Flow</th>
+              <th className="col-level">Level Channel</th>
+              <th className="col-level">Level Meter</th>
+              <th className="col-photos">📸 Photos</th>
+              <th className="col-notes">Notes</th>
+              <th className="col-tech">Tested By</th>
+              <th className="row-number">✕</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={row.id}>
+                <td className="row-number">{index + 1}</td>
+                <td><input type="date" value={row.date} onChange={e => updateRow(row.id, 'date', e.target.value)} /></td>
+                <td><input type="text" value={row.customer} onChange={e => updateRow(row.id, 'customer', e.target.value)} placeholder="Customer name" /></td>
+                <td><input type="text" value={row.facility} onChange={e => updateRow(row.id, 'facility', e.target.value)} placeholder="Facility" /></td>
+                <td>
+                  <select value={row.serviceType} onChange={e => updateRow(row.id, 'serviceType', e.target.value)}>
+                    <option>Closed pipe</option>
+                    <option>Open Channel</option>
+                    <option>Chart Recorder</option>
+                    <option>Loop Test</option>
+                    <option>Startup</option>
+                  </select>
+                </td>
+                <td><input type="text" value={row.manufacturer} onChange={e => updateRow(row.id, 'manufacturer', e.target.value)} placeholder="Manufacturer" /></td>
+                <td>
+                  <input 
+                    type="text" 
+                    value={row.serialNumber} 
+                    onChange={e => autofillFromSerial(row.id, e.target.value)} 
+                    placeholder="Serial (autofills)" 
+                    list="serialList"
+                  />
+                  <datalist id="serialList">
+                    {EQUIPMENT_DB.map(e => <option key={e.serial} value={e.serial} />)}
+                  </datalist>
+                </td>
+                <td><input type="text" value={row.meterReading} onChange={e => updateRow(row.id, 'meterReading', e.target.value)} placeholder="Reading" /></td>
+                <td>
+                  <select value={row.method} onChange={e => updateRow(row.id, 'method', e.target.value)}>
+                    <option>Ultrasonic</option>
+                    <option>Doppler</option>
+                    <option>Level Measurement</option>
+                    <option>Flow Meter Comparison</option>
+                    <option>New Meter Startup</option>
+                  </select>
+                </td>
+                <td>
+                  <select value={row.pipeMaterial} onChange={e => updateRow(row.id, 'pipeMaterial', e.target.value)}>
+                    <option value="">-</option>
+                    <option>PVC</option>
+                    <option>Ductile Iron</option>
+                    <option>Carbon Steel</option>
+                    <option>Stainless Steel</option>
+                    <option>Copper</option>
+                  </select>
+                </td>
+                <td><input type="text" value={row.pipeSize} onChange={e => updateRow(row.id, 'pipeSize', e.target.value)} placeholder='e.g. 4.8' /></td>
+                <td><input type="text" value={row.primaryDevice} onChange={e => updateRow(row.id, 'primaryDevice', e.target.value)} placeholder="Primary device" /></td>
+                <td>
+                  <select value={row.units} onChange={e => updateRow(row.id, 'units', e.target.value)}>
+                    <option>GPM</option>
+                    <option>MGD</option>
+                    <option>CFS</option>
+                    <option>Inches</option>
+                    <option>Feet</option>
+                  </select>
+                </td>
+                <td><input type="number" step="0.01" value={row.validatingFlow1} onChange={e => updateRow(row.id, 'validatingFlow1', e.target.value)} placeholder="Val. flow" /></td>
+                <td><input type="number" step="0.01" value={row.customerFlow1} onChange={e => updateRow(row.id, 'customerFlow1', e.target.value)} placeholder="Cust. flow" /></td>
+                <td><input type="number" step="0.001" value={row.levelChannel1} onChange={e => updateRow(row.id, 'levelChannel1', e.target.value)} placeholder="Channel" /></td>
+                <td><input type="number" step="0.001" value={row.levelMeter1} onChange={e => updateRow(row.id, 'levelMeter1', e.target.value)} placeholder="Meter" /></td>
+                <td className="photo-cell">
+                  <div className="photo-upload">
+                    <label className="photo-upload-btn">
+                      📸 Add Photos
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        multiple 
+                        onChange={e => handlePhotoUpload(row.id, e.target.files)}
+                      />
+                    </label>
+                    {row.photos.length > 0 && (
+                      <>
+                        <div className="photo-thumbnails">
+                          {row.photos.map(photo => (
+                            <div key={photo.id} className="photo-thumb" onClick={() => setPhotoModal(photo.data)}>
+                              <img src={photo.data} alt="Field photo" />
+                              <button 
+                                className="photo-thumb-remove" 
+                                onClick={(e) => {e.stopPropagation(); removePhoto(row.id, photo.id);}}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="photo-count">{row.photos.length} photo(s)</div>
+                      </>
+                    )}
+                  </div>
+                </td>
+                <td><input type="text" value={row.notes} onChange={e => updateRow(row.id, 'notes', e.target.value)} placeholder="Notes" /></td>
+                <td><input type="text" value={row.testedBy} onChange={e => updateRow(row.id, 'testedBy', e.target.value)} /></td>
+                <td className="row-number"><button onClick={() => deleteRow(row.id)} style={{background:'none',border:'none',color:'#ff4444',cursor:'pointer',fontSize:'16px'}}>✕</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        <button className="add-row-btn" onClick={addNewRow}>+ Add New Row</button>
+      </div>
+
+      <div className="actions">
+        <button className="btn" onClick={exportToExcel}>📊 Export to Excel/TSV</button>
+        <button className="btn" onClick={generatePDFs}>📄 Generate {rows.length} Certificate(s) with Photos</button>
+      </div>
+
+      {photoModal && (
+        <div className="photo-modal" onClick={() => setPhotoModal(null)}>
+          <div className="photo-modal-content">
+            <button className="photo-modal-close" onClick={() => setPhotoModal(null)}>✕</button>
+            <img src={photoModal} alt="Full size" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
-if(form.meterSize){doc.text(`Meter Size: ${form.meterSize}`,20,y);y+=7;}
-if(form.comments){
-y+=5;
-doc.text("Comments:",20,y);y+=7;
-const lines=doc.splitTextToSize(form.comments,170);
-doc.text(lines,20,y);
-}
 
-doc.setFontSize(9);
-doc.text("Certified by YOUR GO-TO FLOW PROS",105,270,{align:"center"});
-doc.text(`Technician: ${form.technicianName}`,105,278,{align:"center"});
-
-doc.save(`${form.customer}_${form.serial}_${form.testDate}.pdf`);
-setStatus({type:"success",msg:"PDF Generated!"});
-}catch(e){
-setStatus({type:"error",msg:"Error: "+e.message});
-}
-};
-
-return(
-<div className="container">
-<div className="header">
-<h1>⚡ PCMS Field Collector</h1>
-<p>Professional Certificate Management System | {ASSETS.length} Records</p>
-</div>
-
-<div className="tabs">
-<div className={`tab ${tab==="select"?"active":""}`} onClick={()=>setTab("select")}>📋 Select Equipment</div>
-<div className={`tab ${tab==="form"?"active":""}`} onClick={()=>selected&&setTab("form")}>📝 Test Data</div>
-<div className={`tab ${tab==="preview"?"active":""}`} onClick={()=>form.serial&&setTab("preview")}>👁️ Preview</div>
-</div>
-
-<div className="content">
-{status&&(
-<div className={`status ${status.type}`}>
-{status.msg}
-<button onClick={()=>setStatus(null)}>✕</button>
-</div>
-)}
-
-{tab==="select"&&(
-<>
-<input className="search" placeholder="🔍 Search equipment..." value={search} onChange={e=>setSearch(e.target.value)}/>
-<div className="grid">
-{filtered.map((eq,i)=>(
-<div key={i} className={`card ${selected?.serial===eq.serial?"selected":""}`} onClick={()=>selectEquip(eq)}>
-<div className="card-title">{eq.serial}</div>
-<div className="card-text">{eq.customer}</div>
-<div className="card-text" style={{opacity:0.7}}>{eq.facility}</div>
-<div className="card-text" style={{fontSize:"13px",opacity:0.6}}>{eq.manufacturer}</div>
-</div>
-))}
-</div>
-</>
-)}
-
-{tab==="form"&&form.serial&&(
-<>
-<h2 style={{marginBottom:"25px",color:"#ffd60a"}}>Test Data: {form.serial}</h2>
-
-<div className="form-group">
-<label>Certificate Type</label>
-<select value={form.certificateType} onChange={e=>setForm({...form,certificateType:e.target.value})}>
-{Object.entries(TYPES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}
-</select>
-</div>
-
-{TYPES[form.certificateType].fields.includes("primaryDevice")&&(
-<div className="form-group">
-<label>Primary Device</label>
-<input value={form.primaryDevice} onChange={e=>setForm({...form,primaryDevice:e.target.value})} placeholder="e.g., 6-Inch Parshall"/>
-</div>
-)}
-
-{TYPES[form.certificateType].fields.includes("asFound")&&(
-<>
-<div className="form-group">
-<label>As Found</label>
-<input type="number" step="0.01" value={form.asFound} onChange={e=>setForm({...form,asFound:e.target.value})}/>
-</div>
-<div className="form-group">
-<label>As Left</label>
-<input type="number" step="0.01" value={form.asLeft} onChange={e=>setForm({...form,asLeft:e.target.value})}/>
-</div>
-<div className="form-group">
-<label>Units</label>
-<select value={form.units} onChange={e=>setForm({...form,units:e.target.value})}>
-<option>GPM</option><option>MGD</option><option>CFS</option><option>GPH</option>
-</select>
-</div>
-</>
-)}
-
-{TYPES[form.certificateType].fields.includes("meterSize")&&(
-<div className="form-group">
-<label>Meter Size</label>
-<input value={form.meterSize} onChange={e=>setForm({...form,meterSize:e.target.value})} placeholder='e.g., 6"'/>
-</div>
-)}
-
-<div className="form-group">
-<label>Test Date</label>
-<input type="date" value={form.testDate} onChange={e=>setForm({...form,testDate:e.target.value})}/>
-</div>
-
-<div className="form-group">
-<label>Technician Name</label>
-<input value={form.technicianName} onChange={e=>setForm({...form,technicianName:e.target.value})} placeholder="Your Name"/>
-</div>
-
-<div className="form-group">
-<label>Comments</label>
-<textarea rows="4" value={form.comments} onChange={e=>setForm({...form,comments:e.target.value})} placeholder="Notes..."/>
-</div>
-
-<div className="btn-group">
-<button className="btn btn-primary" onClick={()=>setTab("preview")}>👁️ Preview</button>
-<button className="btn btn-secondary" onClick={genPDF}>📄 Generate PDF</button>
-</div>
-</>
-)}
-
-{tab==="preview"&&form.serial&&(
-<div className="preview">
-<h2>Certificate Preview</h2>
-<h3 style={{fontSize:"1.2rem",marginTop:"10px"}}>YOUR GO-TO FLOW PROS</h3>
-<div style={{textAlign:"center",marginBottom:"30px",opacity:0.9}}>Flow Measurement Testing & Calibration</div>
-<h3>{TYPES[form.certificateType].name}</h3>
-<div className="preview-content">
-<p><strong>Serial:</strong> {form.serial}</p>
-<p><strong>Customer:</strong> {form.customer}</p>
-<p><strong>Facility:</strong> {form.facility}</p>
-<p><strong>Manufacturer:</strong> {form.manufacturer}</p>
-<p><strong>Date:</strong> {form.testDate}</p>
-{form.primaryDevice&&<p><strong>Primary Device:</strong> {form.primaryDevice}</p>}
-{form.asFound&&<p><strong>As Found:</strong> {form.asFound} {form.units}</p>}
-{form.asLeft&&<p><strong>As Left:</strong> {form.asLeft} {form.units}</p>}
-{form.meterSize&&<p><strong>Meter Size:</strong> {form.meterSize}</p>}
-{form.comments&&<p><strong>Comments:</strong> {form.comments}</p>}
-<p style={{marginTop:"25px"}}><strong>Technician:</strong> {form.technicianName}</p>
-</div>
-<div className="btn-group">
-<button className="btn btn-primary" onClick={genPDF}>📄 Generate PDF</button>
-<button className="btn btn-secondary" onClick={()=>setTab("form")}>✏️ Edit</button>
-</div>
-</div>
-)}
-</div>
-</div>
-);
-}
-
-ReactDOM.render(<App/>,document.getElementById("root"));
+ReactDOM.render(<App />, document.getElementById('root'));
 </script>
 </body>
 </html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>PCMS Field Collector</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0e27;color:#fff;min-height:100vh}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.header{background:linear-gradient(135deg,#1a4d2e 0%,#4a7c59 100%);padding:40px;border-radius:16px;margin-bottom:30px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.header h1{font-size:2.8rem;color:#ffd60a;margin-bottom:10px;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
+.header p{font-size:1.1rem;opacity:0.95}
+.tabs{display:flex;gap:12px;margin-bottom:30px}
+.tab{padding:14px 28px;background:#1a1d3a;border:2px solid #2a2f5a;border-radius:10px;cursor:pointer;font-weight:600;transition:all 0.3s;font-size:15px}
+.tab:hover{background:#2a2f5a;transform:translateY(-2px)}
+.tab.active{background:#1a4d2e;border-color:#ffd60a;color:#ffd60a}
+.content{background:#1a1d3a;padding:35px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.3)}
+.search{width:100%;padding:16px;border:2px solid #2a2f5a;border-radius:10px;background:#0a0e27;color:#fff;font-size:16px;margin-bottom:25px}
+.search:focus{outline:none;border-color:#ffd60a}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;max-height:650px;overflow-y:auto;padding-right:8px}
+.card{background:#0a0e27;padding:18px;border-radius:12px;border:2px solid #2a2f5a;cursor:pointer;transition:all 0.3s}
+.card:hover{border-color:#1a4d2e;transform:translateX(6px)}
+.card.selected{background:#1a4d2e;border-color:#ffd60a}
+.card-title{font-weight:700;color:#ffd60a;font-size:16px;margin-bottom:10px}
+.card-text{font-size:14px;opacity:0.85;margin:4px 0}
+.form-group{margin-bottom:24px}
+.form-group label{display:block;margin-bottom:10px;font-weight:600;color:#ffd60a;font-size:15px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:14px;border:2px solid #2a2f5a;border-radius:10px;background:#0a0e27;color:#fff;font-size:15px}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#ffd60a}
+.btn-group{display:flex;gap:16px;margin-top:30px;flex-wrap:wrap}
+.btn{padding:16px 32px;border:none;border-radius:10px;font-weight:600;font-size:16px;cursor:pointer;transition:all 0.3s}
+.btn-primary{background:#1a4d2e;color:#ffd60a;border:2px solid #ffd60a}
+.btn-primary:hover{background:#2d6a3f;transform:scale(1.05)}
+.btn-secondary{background:#2a2f5a;color:#fff;border:2px solid #3a3f6a}
+.btn-secondary:hover{background:#3a3f6a}
+.preview{background:#0a0e27;padding:30px;border-radius:12px;margin-top:25px;border:2px solid #2a2f5a}
+.preview h2,.preview h3{color:#ffd60a;margin-bottom:20px;text-align:center}
+.preview-content{font-size:15px;line-height:2}
+.preview-content p{margin:8px 0}
+.preview-content strong{color:#ffd60a}
+.status{padding:18px;margin:20px 0;border-radius:10px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.status.success{background:#1a4d2e;color:#ffd60a;border:2px solid #ffd60a}
+.status.error{background:#8b0000;color:#fff;border:2px solid #ff4444}
+.status button{background:none;border:none;color:inherit;font-size:20px;cursor:pointer;padding:0 10px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useMemo}=React;
+
+const ASSETS=[{"serial":"211108873","customer":"Staff WSC","facility":"Eastland County Water Supply","manufacturer":"Octave Master Meter 6\"","certificateType":"CLOSED_PIPE"},{"serial":"S16317668","customer":"Staff WSC","facility":"La Casa","manufacturer":"Khrone WATERFLUX 3070 C","certificateType":"CLOSED_PIPE"},{"serial":"221100217","customer":"Staff WSC","facility":"Master Meter","manufacturer":"Octave Master Meter 6\"","certificateType":"CLOSED_PIPE"},{"serial":"74453","customer":"West Travis County PUA","facility":"Plant 1 & 2 Final","manufacturer":"Greyline OCF 5","certificateType":"OPEN_CHANNEL","primaryDevice":"60-Degree V-Notch Weir"},{"serial":"N1F1887T","customer":"West Travis County PUA","facility":"CCNG Raw at Spanish Oaks","manufacturer":"Fuji Delta C","certificateType":"CLOSED_PIPE"},{"serial":"R3060716000","customer":"New Braunfels Utilities","facility":"Weltner Rd. Pumps 1, 2, 3, 4, 5","manufacturer":"E&H Promag 400","certificateType":"CLOSED_PIPE"}];
+
+const TYPES={
+CLOSED_PIPE:{name:"Closed Pipe Test",fields:["asFound","asLeft","units","meterSize"]},
+OPEN_CHANNEL:{name:"Open Channel Test",fields:["primaryDevice","asFound","asLeft","units"]},
+CHART_RECORDER:{name:"Chart Recorder",fields:["primaryDevice","units"]},
+LOOP_TEST:{name:"Loop Test",fields:["loopTest"]}
+};
+
+function App(){
+const[tab,setTab]=useState("select");
+const[search,setSearch]=useState("");
+const[selected,setSelected]=useState(null);
+const[form,setForm]=useState({});
+const[status,setStatus]=useState(null);
+
+const filtered=useMemo(()=>{
+if(!search)return ASSETS;
+const s=search.toLowerCase();
+return ASSETS.filter(e=>
+e.serial.toLowerCase().includes(s)||
+e.customer.toLowerCase().includes(s)||
+e.facility.toLowerCase().includes(s)||
+e.manufacturer.toLowerCase().includes(s)
+);
+},[search]);
+
+const selectEquip=(eq)=>{
+setSelected(eq);
+setForm({
+serial:eq.serial,
+customer:eq.customer,
+facility:eq.facility,
+manufacturer:eq.manufacturer,
+certificateType:eq.certificateType,
+primaryDevice:eq.primaryDevice||"",
+asFound:"",
+asLeft:"",
+units:"GPM",
+meterSize:"",
+testDate:new Date().toISOString().split('T')[0],
+technicianName:"",
+comments:""
+});
+setTab("form");
+};
+
+const genPDF=()=>{
+try{
+const{jsPDF}=window.jspdf;
+const doc=new jsPDF();
+const type=TYPES[form.certificateType];
+
+doc.setFontSize(20);
+doc.setTextColor(26,77,46);
+doc.text("YOUR GO-TO FLOW PROS",105,20,{align:"center"});
+doc.setFontSize(12);
+doc.setTextColor(0,0,0);
+doc.text("Flow Measurement Testing & Calibration",105,28,{align:"center"});
+
+doc.setFontSize(16);
+doc.text(type.name,105,45,{align:"center"});
+
+doc.setFontSize(10);
+let y=60;
+doc.text(`Serial: ${form.serial}`,20,y);y+=7;
+doc.text(`Customer: ${form.customer}`,20,y);y+=7;
+doc.text(`Facility: ${form.facility}`,20,y);y+=7;
+doc.text(`Manufacturer: ${form.manufacturer}`,20,y);y+=7;
+doc.text(`Date: ${form.testDate}`,20,y);y+=10;
+
+if(form.primaryDevice){doc.text(`Primary Device: ${form.primaryDevice}`,20,y);y+=7;}
+if(form.asFound){
+doc.text(`As Found: ${form.asFound} ${form.units}`,20,y);y+=7;
+doc.text(`As Left: ${form.asLeft} ${form.units}`,20,y);y+=7;
+}
+if(form.meterSize){doc.text(`Meter Size: ${form.meterSize}`,20,y);y+=7;}
+if(form.comments){
+y+=5;
+doc.text("Comments:",20,y);y+=7;
+const lines=doc.splitTextToSize(form.comments,170);
+doc.text(lines,20,y);
+}
+
+doc.setFontSize(9);
+doc.text("Certified by YOUR GO-TO FLOW PROS",105,270,{align:"center"});
+doc.text(`Technician: ${form.technicianName}`,105,278,{align:"center"});
+
+doc.save(`${form.customer}_${form.serial}_${form.testDate}.pdf`);
+setStatus({type:"success",msg:"PDF Generated!"});
+}catch(e){
+setStatus({type:"error",msg:"Error: "+e.message});
+}
+};
+
+return(
+<div className="container">
+<div className="header">
+<h1>⚡ PCMS Field Collector</h1>
+<p>Professional Certificate Management System | {ASSETS.length} Records</p>
+</div>
+
+<div className="tabs">
+<div className={`tab ${tab==="select"?"active":""}`} onClick={()=>setTab("select")}>📋 Select Equipment</div>
+<div className={`tab ${tab==="form"?"active":""}`} onClick={()=>selected&&setTab("form")}>📝 Test Data</div>
+<div className={`tab ${tab==="preview"?"active":""}`} onClick={()=>form.serial&&setTab("preview")}>👁️ Preview</div>
+</div>
+
+<div className="content">
+{status&&(
+<div className={`status ${status.type}`}>
+{status.msg}
+<button onClick={()=>setStatus(null)}>✕</button>
+</div>
+)}
+
+{tab==="select"&&(
+<>
+<input className="search" placeholder="🔍 Search equipment..." value={search} onChange={e=>setSearch(e.target.value)}/>
+<div className="grid">
+{filtered.map((eq,i)=>(
+<div key={i} className={`card ${selected?.serial===eq.serial?"selected":""}`} onClick={()=>selectEquip(eq)}>
+<div className="card-title">{eq.serial}</div>
+<div className="card-text">{eq.customer}</div>
+<div className="card-text" style={{opacity:0.7}}>{eq.facility}</div>
+<div className="card-text" style={{fontSize:"13px",opacity:0.6}}>{eq.manufacturer}</div>
+</div>
+))}
+</div>
+</>
+)}
+
+{tab==="form"&&form.serial&&(
+<>
+<h2 style={{marginBottom:"25px",color:"#ffd60a"}}>Test Data: {form.serial}</h2>
+
+<div className="form-group">
+<label>Certificate Type</label>
+<select value={form.certificateType} onChange={e=>setForm({...form,certificateType:e.target.value})}>
+{Object.entries(TYPES).map(([k,v])=><option key={k} value={k}>{v.name}</option>)}
+</select>
+</div>
+
+{TYPES[form.certificateType].fields.includes("primaryDevice")&&(
+<div className="form-group">
+<label>Primary Device</label>
+<input value={form.primaryDevice} onChange={e=>setForm({...form,primaryDevice:e.target.value})} placeholder="e.g., 6-Inch Parshall"/>
+</div>
+)}
+
+{TYPES[form.certificateType].fields.includes("asFound")&&(
+<>
+<div className="form-group">
+<label>As Found</label>
+<input type="number" step="0.01" value={form.asFound} onChange={e=>setForm({...form,asFound:e.target.value})}/>
+</div>
+<div className="form-group">
+<label>As Left</label>
+<input type="number" step="0.01" value={form.asLeft} onChange={e=>setForm({...form,asLeft:e.target.value})}/>
+</div>
+<div className="form-group">
+<label>Units</label>
+<select value={form.units} onChange={e=>setForm({...form,units:e.target.value})}>
+<option>GPM</option><option>MGD</option><option>CFS</option><option>GPH</option>
+</select>
+</div>
+</>
+)}
+
+{TYPES[form.certificateType].fields.includes("meterSize")&&(
+<div className="form-group">
+<label>Meter Size</label>
+<input value={form.meterSize} onChange={e=>setForm({...form,meterSize:e.target.value})} placeholder='e.g., 6"'/>
+</div>
+)}
+
+<div className="form-group">
+<label>Test Date</label>
+<input type="date" value={form.testDate} onChange={e=>setForm({...form,testDate:e.target.value})}/>
+</div>
+
+<div className="form-group">
+<label>Technician Name</label>
+<input value={form.technicianName} onChange={e=>setForm({...form,technicianName:e.target.value})} placeholder="Your Name"/>
+</div>
+
+<div className="form-group">
+<label>Comments</label>
+<textarea rows="4" value={form.comments} onChange={e=>setForm({...form,comments:e.target.value})} placeholder="Notes..."/>
+</div>
+
+<div className="btn-group">
+<button className="btn btn-primary" onClick={()=>setTab("preview")}>👁️ Preview</button>
+<button className="btn btn-secondary" onClick={genPDF}>📄 Generate PDF</button>
+</div>
+</>
+)}
+
+{tab==="preview"&&form.serial&&(
+<div className="preview">
+<h2>Certificate Preview</h2>
+<h3 style={{fontSize:"1.2rem",marginTop:"10px"}}>YOUR GO-TO FLOW PROS</h3>
+<div style={{textAlign:"center",marginBottom:"30px",opacity:0.9}}>Flow Measurement Testing & Calibration</div>
+<h3>{TYPES[form.certificateType].name}</h3>
+<div className="preview-content">
+<p><strong>Serial:</strong> {form.serial}</p>
+<p><strong>Customer:</strong> {form.customer}</p>
+<p><strong>Facility:</strong> {form.facility}</p>
+<p><strong>Manufacturer:</strong> {form.manufacturer}</p>
+<p><strong>Date:</strong> {form.testDate}</p>
+{form.primaryDevice&&<p><strong>Primary Device:</strong> {form.primaryDevice}</p>}
+{form.asFound&&<p><strong>As Found:</strong> {form.asFound} {form.units}</p>}
+{form.asLeft&&<p><strong>As Left:</strong> {form.asLeft} {form.units}</p>}
+{form.meterSize&&<p><strong>Meter Size:</strong> {form.meterSize}</p>}
+{form.comments&&<p><strong>Comments:</strong> {form.comments}</p>}
+<p style={{marginTop:"25px"}}><strong>Technician:</strong> {form.technicianName}</p>
+</div>
+<div className="btn-group">
+<button className="btn btn-primary" onClick={genPDF}>📄 Generate PDF</button>
+<button className="btn btn-secondary" onClick={()=>setTab("form")}>✏️ Edit</button>
+</div>
+</div>
+)}
+</div>
+</div>
+);
+}
+
+ReactDOM.render(<App/>,document.getElementById("root"));
+</script>
+</body>
+</html>

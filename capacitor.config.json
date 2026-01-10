@@ -1,0 +1,14 @@
+{
+  "appId": "com.pcms.fieldcollector",
+  "appName": "PCMS Field Collector",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "Camera": {
+      "permissions": ["camera", "photos"]
+    },
+    "Filesystem": {
+      "permissions": ["photos"]
+    }
+  }
+}

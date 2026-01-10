@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate App Icons</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #1a4d2e;
+      color: white;
+      text-align: center;
+    }
+    canvas {
+      border: 2px solid #ffd60a;
+      margin: 20px;
+      display: block;
+    }
+    button {
+      background: #ffd60a;
+      color: #1a4d2e;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background: #ffed4e;
+    }
+  </style>
+</head>
+<body>
+  <h1>PCMS App Icon Generator</h1>
+  <p>Click the buttons below to download app icons for your PWA</p>
+
+  <canvas id="icon192" width="192" height="192"></canvas>
+  <button onclick="downloadIcon(192)">Download 192x192 Icon</button>
+
+  <canvas id="icon512" width="512" height="512"></canvas>
+  <button onclick="downloadIcon(512)">Download 512x512 Icon</button>
+
+  <script>
+    function drawIcon(size) {
+      const canvas = document.getElementById('icon' + size);
+      const ctx = canvas.getContext('2d');
+
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#1a4d2e');
+      gradient.addColorStop(1, '#2d6a3f');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+
+      // Border
+      ctx.strokeStyle = '#ffd60a';
+      ctx.lineWidth = size * 0.02;
+      ctx.strokeRect(size * 0.05, size * 0.05, size * 0.9, size * 0.9);
+
+      // Certificate icon (simplified)
+      ctx.fillStyle = '#ffd60a';
+
+      // Document shape
+      const docWidth = size * 0.5;
+      const docHeight = size * 0.6;
+      const docX = (size - docWidth) / 2;
+      const docY = (size - docHeight) / 2;
+
+      ctx.fillRect(docX, docY, docWidth, docHeight);
+
+      // Lines on certificate
+      ctx.fillStyle = '#1a4d2e';
+      const lineWidth = docWidth * 0.7;
+      const lineHeight = size * 0.03;
+      const lineX = docX + (docWidth - lineWidth) / 2;
+
+      for (let i = 0; i < 4; i++) {
+        ctx.fillRect(lineX, docY + docHeight * 0.2 + i * size * 0.1, lineWidth, lineHeight);
+      }
+
+      // PCMS text
+      ctx.fillStyle = '#ffd60a';
+      ctx.font = `bold ${size * 0.12}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('PCMS', size / 2, size * 0.9);
+    }
+
+    function downloadIcon(size) {
+      const canvas = document.getElementById('icon' + size);
+      const url = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = 'icon-' + size + '.png';
+      link.href = url;
+      link.click();
+    }
+
+    // Draw icons on load
+    drawIcon(192);
+    drawIcon(512);
+  </script>
+</body>
+</html>

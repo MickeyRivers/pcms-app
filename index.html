@@ -2,8 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>PCMS Field Data Collector</title>
+
+<!-- PWA Meta Tags -->
+<meta name="description" content="Field data collection and certificate generation for water measurement equipment">
+<meta name="theme-color" content="#2d5016">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PCMS Collector">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -90,6 +100,31 @@ h1 {
   background: var(--moss);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 214, 10, 0.3);
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--forest);
+  border-color: var(--gold);
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(255, 214, 10, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.btn-primary:hover {
+  background: #ffed4e;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 214, 10, 0.6);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(255, 214, 10, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(255, 214, 10, 0.7);
+  }
 }
 
 .btn-secondary {
@@ -402,6 +437,53 @@ h1 {
   }
   .spreadsheet th {
     font-size: 10px;
+  }
+
+  /* Mobile optimizations */
+  .btn {
+    min-height: 44px; /* iOS touch target */
+    font-size: 15px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .controls .btn {
+    width: 100%;
+  }
+
+  header {
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+}
+
+/* Touch device improvements */
+@media (hover: none) {
+  .btn:active {
+    transform: scale(0.98);
+  }
+}
+
+/* iOS safe area support */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .app {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 </style>
@@ -987,9 +1069,9 @@ function App() {
 
       <div className="controls">
         <button className="btn" onClick={addNewRow}>+ Add Row</button>
+        <button className="btn btn-primary" onClick={generateAndUploadPDFs}>🎓 Make the Cert!</button>
         <button className="btn btn-secondary" onClick={exportToExcel}>📊 Export to Excel</button>
         <button className="btn btn-secondary" onClick={generatePDFs}>📄 Download PDFs</button>
-        <button className="btn btn-secondary" onClick={generateAndUploadPDFs}>☁️ Upload to Dropbox</button>
       </div>
 
       <div className="spreadsheet-container">
@@ -1054,6 +1136,21 @@ function App() {
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+
+<!-- Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('ServiceWorker registered:', registration.scope);
+      })
+      .catch(err => {
+        console.log('ServiceWorker registration failed:', err);
+      });
+  });
+}
 </script>
 </body>
 </html>

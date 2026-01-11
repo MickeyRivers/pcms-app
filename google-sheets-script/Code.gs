@@ -86,8 +86,18 @@ function onOpen() {
  * Click this in the menu to authorize the script to create Google Docs
  */
 function testAuthorize() {
-  // This function requires DocumentApp permissions, which will trigger authorization
-  SpreadsheetApp.getUi().alert('✅ Script is now authorized!\n\nYou can now use the "Make the Cert!" checkbox to generate certificates.');
+  try {
+    // Create a test document to trigger DocumentApp permissions
+    const testDoc = DocumentApp.create('TEMP_Authorization_Test');
+    const docId = testDoc.getId();
+
+    // Delete the test document immediately
+    DriveApp.getFileById(docId).setTrashed(true);
+
+    SpreadsheetApp.getUi().alert('✅ Script is now authorized!\n\nYou can now use the "Make the Cert!" checkbox to generate certificates.');
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Authorization failed: ' + error.message);
+  }
 }
 
 /**

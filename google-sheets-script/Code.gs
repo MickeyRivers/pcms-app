@@ -212,7 +212,8 @@ function createPDF(data, rowData) {
   const header = body.appendParagraph('CALIBRATION CERTIFICATE');
   header.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
   header.setFontSize(18);
-  header.setBold(true);
+  const headerText = header.editAsText();
+  headerText.setBold(0, headerText.getText().length - 1, true);
 
   body.appendParagraph(''); // Spacing
 
@@ -300,7 +301,8 @@ function createPDF(data, rowData) {
 
   // Technician signature
   const signature = body.appendParagraph(`Tested by: ${data.testedBy}`);
-  signature.setBold(true);
+  const signatureText = signature.editAsText();
+  signatureText.setBold(0, signatureText.getText().length - 1, true);
 
   // Save and convert to PDF
   doc.saveAndClose();
@@ -332,7 +334,8 @@ function addServiceSection(body, title) {
   body.appendParagraph(''); // Spacing
   const section = body.appendParagraph(title);
   section.setFontSize(14);
-  section.setBold(true);
+  const sectionText = section.editAsText();
+  sectionText.setBold(0, sectionText.getText().length - 1, true);
   body.appendParagraph(''); // Spacing
 }
 

@@ -66,7 +66,7 @@ const COLUMNS = {
   photo1: 37,
   photo2: 38,
   photo3: 39,
-  makecert: 40 // Checkbox column
+  makeCert: 39 // Checkbox column - "Make the Cert!" is column 40 (index 39)
 };
 
 // ============================================
@@ -85,18 +85,28 @@ function onOpen() {
  * This runs automatically when you check the "Make the Cert!" box
  */
 function onEdit(e) {
+  // Debug logging
+  Logger.log('onEdit triggered');
+  Logger.log('Column edited: ' + e.range.getColumn());
+  Logger.log('Row edited: ' + e.range.getRow());
+  Logger.log('Value: ' + e.value);
+  Logger.log('Expected column: ' + (COLUMNS.makeCert + 1));
+
   const sheet = e.source.getActiveSheet();
   const range = e.range;
   const row = range.getRow();
   const col = range.getColumn();
 
   // Only trigger if:
-  // 1. Edit is in the "Make the Cert!" column (column 41, which is index 40)
+  // 1. Edit is in the "Make the Cert!" column (column 40)
   // 2. Row is 4 or greater (data rows)
   // 3. Value is TRUE (checkbox checked)
   if (col === COLUMNS.makeCert + 1 && row >= 4 && e.value === 'TRUE') {
+    Logger.log('All conditions met - generating certificate');
     // Generate certificate for this row
     generateCertificate(sheet, row);
+  } else {
+    Logger.log('Conditions not met - col: ' + col + ', expected: ' + (COLUMNS.makeCert + 1) + ', row: ' + row + ', value: ' + e.value);
   }
 }
 

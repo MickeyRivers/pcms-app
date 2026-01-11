@@ -95,8 +95,8 @@ function generateCertForSelectedRow() {
   const activeRange = sheet.getActiveRange();
   const row = activeRange.getRow();
 
-  if (row === 1) {
-    SpreadsheetApp.getUi().alert('Please select a data row, not the header row.');
+  if (row < 4) {
+    SpreadsheetApp.getUi().alert('Please select a data row (row 4 or below), not a header row.');
     return;
   }
 
@@ -113,10 +113,10 @@ function generateCertsForCheckedRows() {
 
   let count = 0;
 
-  // Start from row 2 (skip header)
-  for (let i = 1; i < values.length; i++) {
+  // Start from row 4 (skip 3 header rows)
+  for (let i = 3; i < values.length; i++) {
     const rowData = values[i];
-    const isChecked = rowData[COLUMNS.makecer];
+    const isChecked = rowData[COLUMNS.makeCert];
 
     if (isChecked === true) {
       generateCertificate(sheet, i + 1); // +1 because rows are 1-indexed

@@ -76,37 +76,45 @@ const COLUMNS = {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('🎓 PCMS Certificates')
-    .addItem('Test - Authorize Script', 'testAuthorize')
+    .addItem('⚙️ Install Trigger (First Time Setup)', 'installTrigger')
     .addItem('Setup Instructions', 'showInstructions')
     .addToUi();
 }
 
 /**
- * Test function to trigger authorization
- * Click this in the menu to authorize the script to create Google Docs
+ * Install the onEdit trigger with full permissions
+ * This replaces the simple trigger with an installable trigger that can access DocumentApp
  */
-function testAuthorize() {
+function installTrigger() {
   try {
-    // Create a test document to trigger DocumentApp permissions
-    const testDoc = DocumentApp.create('TEMP_Authorization_Test');
-    const docId = testDoc.getId();
+    // Delete any existing onEdit triggers to avoid duplicates
+    const triggers = ScriptApp.getProjectTriggers();
+    for (let i = 0; i < triggers.length; i++) {
+      if (triggers[i].getHandlerFunction() === 'onEditInstallable') {
+        ScriptApp.deleteTrigger(triggers[i]);
+      }
+    }
 
-    // Delete the test document immediately
-    DriveApp.getFileById(docId).setTrashed(true);
+    // Create new installable trigger
+    ScriptApp.newTrigger('onEditInstallable')
+      .forSpreadsheet(SpreadsheetApp.getActive())
+      .onEdit()
+      .create();
 
-    SpreadsheetApp.getUi().alert('✅ Script is now authorized!\n\nYou can now use the "Make the Cert!" checkbox to generate certificates.');
+    SpreadsheetApp.getUi().alert('✅ Trigger installed successfully!\n\nYou can now use the "Make the Cert!" checkbox to generate certificates.\n\nYou only need to do this once.');
   } catch (error) {
-    SpreadsheetApp.getUi().alert('Authorization failed: ' + error.message);
+    SpreadsheetApp.getUi().alert('❌ Installation failed: ' + error.message);
   }
 }
 
 /**
- * Automatic trigger when checkbox is clicked
+ * Installable trigger when checkbox is clicked
  * This runs automatically when you check the "Make the Cert!" box
+ * IMPORTANT: This is an installable trigger (not a simple trigger) so it has full permissions
  */
-function onEdit(e) {
+function onEditInstallable(e) {
   // Debug logging
-  Logger.log('onEdit triggered');
+  Logger.log('onEditInstallable triggered');
   Logger.log('Column edited: ' + e.range.getColumn());
   Logger.log('Row edited: ' + e.range.getRow());
   Logger.log('Value: ' + e.value);
@@ -118,7 +126,7 @@ function onEdit(e) {
   const col = range.getColumn();
 
   // Only trigger if:
-  // 1. Edit is in the "Make the Cert!" column (column 40)
+  // 1. Edit is in the "Make the Cert!" column (column 41)
   // 2. Row is 4 or greater (data rows)
   // 3. Value is TRUE (checkbox checked)
   if (col === COLUMNS.makeCert + 1 && row >= 4 && e.value === 'TRUE') {

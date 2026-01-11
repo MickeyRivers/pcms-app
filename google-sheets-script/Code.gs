@@ -66,7 +66,7 @@ const COLUMNS = {
   photo1: 37,
   photo2: 38,
   photo3: 39,
-  makeCert: 39 // Checkbox column - "Make the Cert!" is column 40 (index 39)
+  makeCert: 40 // Checkbox column - "Make the Cert!" is column 41 (index 40)
 };
 
 // ============================================

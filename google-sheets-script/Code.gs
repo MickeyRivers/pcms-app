@@ -70,69 +70,43 @@ const COLUMNS = {
 };
 
 // ============================================
-// MENU SETUP
+// MENU SETUP & TRIGGERS
 // ============================================
 
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('🎓 PCMS Certificates')
-    .addItem('Make the Cert! (Selected Row)', 'generateCertForSelectedRow')
-    .addItem('Make All Checked Certs', 'generateCertsForCheckedRows')
-    .addSeparator()
     .addItem('Setup Instructions', 'showInstructions')
     .addToUi();
 }
 
-// ============================================
-// MAIN CERTIFICATE GENERATION FUNCTIONS
-// ============================================
-
 /**
- * Generate certificate for the currently selected row
+ * Automatic trigger when checkbox is clicked
+ * This runs automatically when you check the "Make the Cert!" box
  */
-function generateCertForSelectedRow() {
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const activeRange = sheet.getActiveRange();
-  const row = activeRange.getRow();
+function onEdit(e) {
+  const sheet = e.source.getActiveSheet();
+  const range = e.range;
+  const row = range.getRow();
+  const col = range.getColumn();
 
-  if (row < 4) {
-    SpreadsheetApp.getUi().alert('Please select a data row (row 4 or below), not a header row.');
-    return;
+  // Only trigger if:
+  // 1. Edit is in the "Make the Cert!" column (column 41, which is index 40)
+  // 2. Row is 4 or greater (data rows)
+  // 3. Value is TRUE (checkbox checked)
+  if (col === COLUMNS.makeCert + 1 && row >= 4 && e.value === 'TRUE') {
+    // Generate certificate for this row
+    generateCertificate(sheet, row);
   }
-
-  generateCertificate(sheet, row);
 }
 
-/**
- * Generate certificates for all rows where checkbox is checked
- */
-function generateCertsForCheckedRows() {
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const dataRange = sheet.getDataRange();
-  const values = dataRange.getValues();
-
-  let count = 0;
-
-  // Start from row 4 (skip 3 header rows)
-  for (let i = 3; i < values.length; i++) {
-    const rowData = values[i];
-    const isChecked = rowData[COLUMNS.makeCert];
-
-    if (isChecked === true) {
-      generateCertificate(sheet, i + 1); // +1 because rows are 1-indexed
-      count++;
-    }
-  }
-
-  if (count === 0) {
-    SpreadsheetApp.getUi().alert('No rows checked. Please check the checkbox for rows you want to generate certificates for.');
-  } else {
-    SpreadsheetApp.getUi().alert(`Successfully generated and uploaded ${count} certificate(s) to Dropbox!`);
-  }
-}
+// ============================================
+// CERTIFICATE GENERATION
+// ============================================
 
 /**
  * Generate a single certificate for a specific row
+ * Called automatically by onEdit trigger when checkbox is checked
  */
 function generateCertificate(sheet, rowNumber) {
   const ui = SpreadsheetApp.getUi();

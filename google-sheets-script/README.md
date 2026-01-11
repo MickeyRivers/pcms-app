@@ -66,19 +66,18 @@ Automatically generate PDF certificates from your Google Sheets data and upload 
 
 ## 📋 How to Use
 
-### Method 1: Generate Single Certificate
+### Super Simple - Just Check the Box!
 
-1. **Click on any row** with data
-2. **Go to menu:** 🎓 PCMS Certificates → "Make the Cert! (Selected Row)"
-3. **Wait a few seconds**
-4. **Done!** Certificate uploaded to Dropbox
+1. **Fill in your data** in the row
+2. **Check the "Make the Cert!" checkbox** in the last column
+3. **Wait a few seconds** - the script automatically:
+   - Generates the PDF certificate
+   - Uploads it to Dropbox
+   - Unchecks the box
+   - Shows success message
+4. **Done!** That's it!
 
-### Method 2: Generate Multiple Certificates
-
-1. **Check the checkbox** in the last column for each row you want to process
-2. **Go to menu:** 🎓 PCMS Certificates → "Make All Checked Certs"
-3. **Wait** (may take longer for multiple rows)
-4. **Done!** All certificates uploaded to Dropbox
+**No menu needed - just check the box and it happens automatically!**
 
 ### Where Are My Certificates?
 

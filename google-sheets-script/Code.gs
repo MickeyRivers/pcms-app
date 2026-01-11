@@ -243,42 +243,167 @@ function createPDF(data, rowData) {
   const serviceType = data.serviceType.toLowerCase();
 
   if (serviceType.includes('closed pipe')) {
-    addServiceSection(body, 'CLOSED PIPE TEST RESULTS');
+    addServiceSection(body, 'FLOW RATE COMPARISON');
+
+    // Get values
+    const valFlow = rowData[COLUMNS.closedPipeValidatingFlowBefore] || 'N/A';
+    const cusFlow = rowData[COLUMNS.closedPipeCustomerFlowBefore] || 'N/A';
+
+    // Calculate accuracy
+    let accuracy = 'N/A';
+    try {
+      if (valFlow !== 'N/A' && cusFlow !== 'N/A') {
+        const valNum = parseFloat(valFlow);
+        const cusNum = parseFloat(cusFlow);
+        if (valNum !== 0) {
+          accuracy = ((cusNum / valNum) * 100).toFixed(1) + '%';
+        }
+      }
+    } catch (e) {
+      accuracy = 'N/A';
+    }
+
     addMeasurementTable(body, [
-      ['Measurement', 'Before Adjustment', 'After Adjustment'],
-      ['Validating Meter Flow', rowData[COLUMNS.closedPipeValidatingFlowBefore], rowData[COLUMNS.closedPipeValidatingFlowAfter]],
-      ['Customer Meter Flow', rowData[COLUMNS.closedPipeCustomerFlowBefore], rowData[COLUMNS.closedPipeCustomerFlowAfter]]
+      ['Validating Meter (GPM)', 'Customer Meter (GPM)', 'Accuracy'],
+      [valFlow, cusFlow, accuracy]
     ]);
     addField(body, 'Pipe Material', data.pipeMaterial);
     addField(body, 'Pipe Size (O.D.)', data.pipeSize);
   }
 
   if (serviceType.includes('open channel')) {
-    addServiceSection(body, 'OPEN CHANNEL TEST RESULTS');
+    addServiceSection(body, 'LEVEL MEASUREMENTS');
+
+    // Get values
+    const beforeVal = rowData[COLUMNS.openChannelLevelInChannelBefore] || 'N/A';
+    const afterVal = rowData[COLUMNS.openChannelLevelOnMeterAfter] || 'N/A';
+
+    // Calculate % difference
+    let percentDiff = 'N/A';
+    try {
+      if (beforeVal !== 'N/A' && afterVal !== 'N/A') {
+        const beforeNum = parseFloat(beforeVal);
+        const afterNum = parseFloat(afterVal);
+        if (beforeNum !== 0) {
+          const diff = Math.abs(afterNum - beforeNum) / beforeNum * 100;
+          percentDiff = diff.toFixed(1) + '%';
+        }
+      }
+    } catch (e) {
+      percentDiff = 'N/A';
+    }
+
     addMeasurementTable(body, [
-      ['Measurement', 'Before Adjustment', 'After Adjustment'],
-      ['Level in Channel', rowData[COLUMNS.openChannelLevelInChannelBefore], rowData[COLUMNS.openChannelLevelInChannelAfter]],
-      ['Level on Meter', rowData[COLUMNS.openChannelLevelOnMeterBefore], rowData[COLUMNS.openChannelLevelOnMeterAfter]]
+      ['Before Adjustment', 'After Adjustment', '% Difference'],
+      [beforeVal, afterVal, percentDiff]
     ]);
     addField(body, 'Primary Device Type', data.primaryDeviceType);
   }
 
   if (serviceType.includes('chart recorder')) {
     addServiceSection(body, 'CHART RECORDER TEST RESULTS');
+
+    // Get values
+    const meterBefore = rowData[COLUMNS.chartRecorderMeterBefore] || 'N/A';
+    const chartBefore = rowData[COLUMNS.chartRecorderChartBefore] || 'N/A';
+    const meterAfter = rowData[COLUMNS.chartRecorderMeterAfter] || 'N/A';
+    const chartAfter = rowData[COLUMNS.chartRecorderChartAfter] || 'N/A';
+
+    // Calculate % difference for before
+    let percentDiffBefore = 'N/A';
+    try {
+      if (meterBefore !== 'N/A' && chartBefore !== 'N/A') {
+        const meterNum = parseFloat(meterBefore);
+        const chartNum = parseFloat(chartBefore);
+        if (chartNum !== 0) {
+          const diff = Math.abs(meterNum - chartNum) / chartNum * 100;
+          percentDiffBefore = diff.toFixed(1) + '%';
+        }
+      }
+    } catch (e) {
+      percentDiffBefore = 'N/A';
+    }
+
+    // Calculate % difference for after
+    let percentDiffAfter = 'N/A';
+    try {
+      if (meterAfter !== 'N/A' && chartAfter !== 'N/A') {
+        const meterNum = parseFloat(meterAfter);
+        const chartNum = parseFloat(chartAfter);
+        if (chartNum !== 0) {
+          const diff = Math.abs(meterNum - chartNum) / chartNum * 100;
+          percentDiffAfter = diff.toFixed(1) + '%';
+        }
+      }
+    } catch (e) {
+      percentDiffAfter = 'N/A';
+    }
+
     addMeasurementTable(body, [
-      ['Measurement', 'Before Adjustment', 'After Adjustment'],
-      ['Value on Meter', rowData[COLUMNS.chartRecorderMeterBefore], rowData[COLUMNS.chartRecorderMeterAfter]],
-      ['Value on Chart Recorder', rowData[COLUMNS.chartRecorderChartBefore], rowData[COLUMNS.chartRecorderChartAfter]]
+      ['Measurement', 'Before Adjustment', 'After Adjustment', '% Difference (Before)', '% Difference (After)'],
+      ['Value on Meter', meterBefore, meterAfter, percentDiffBefore, percentDiffAfter],
+      ['Value on Chart Recorder', chartBefore, chartAfter, '', '']
     ]);
   }
 
   if (serviceType.includes('loop test')) {
     addServiceSection(body, 'LOOP TEST RESULTS');
+
+    // Get values
+    const desiredLow = rowData[COLUMNS.loopTestDesiredLow] || 'N/A';
+    const measuredLow = rowData[COLUMNS.loopTestMeasuredLow] || 'N/A';
+    const desiredMid = rowData[COLUMNS.loopTestDesiredMid] || 'N/A';
+    const measuredMid = rowData[COLUMNS.loopTestMeasuredMid] || 'N/A';
+    const desiredHigh = rowData[COLUMNS.loopTestDesiredHigh] || 'N/A';
+    const measuredHigh = rowData[COLUMNS.loopTestMeasuredHigh] || 'N/A';
+
+    // Calculate accuracy for Low point
+    let accuracyLow = 'N/A';
+    try {
+      if (desiredLow !== 'N/A' && measuredLow !== 'N/A') {
+        const desiredNum = parseFloat(desiredLow);
+        const measuredNum = parseFloat(measuredLow);
+        if (desiredNum !== 0) {
+          accuracyLow = ((measuredNum / desiredNum) * 100).toFixed(1) + '%';
+        }
+      }
+    } catch (e) {
+      accuracyLow = 'N/A';
+    }
+
+    // Calculate accuracy for Mid point
+    let accuracyMid = 'N/A';
+    try {
+      if (desiredMid !== 'N/A' && measuredMid !== 'N/A') {
+        const desiredNum = parseFloat(desiredMid);
+        const measuredNum = parseFloat(measuredMid);
+        if (desiredNum !== 0) {
+          accuracyMid = ((measuredNum / desiredNum) * 100).toFixed(1) + '%';
+        }
+      }
+    } catch (e) {
+      accuracyMid = 'N/A';
+    }
+
+    // Calculate accuracy for High point
+    let accuracyHigh = 'N/A';
+    try {
+      if (desiredHigh !== 'N/A' && measuredHigh !== 'N/A') {
+        const desiredNum = parseFloat(desiredHigh);
+        const measuredNum = parseFloat(measuredHigh);
+        if (desiredNum !== 0) {
+          accuracyHigh = ((measuredNum / desiredNum) * 100).toFixed(1) + '%';
+        }
+      }
+    } catch (e) {
+      accuracyHigh = 'N/A';
+    }
+
     addMeasurementTable(body, [
-      ['Point', 'Desired Output (mA)', 'Measured Output (mA)'],
-      ['Low', rowData[COLUMNS.loopTestDesiredLow], rowData[COLUMNS.loopTestMeasuredLow]],
-      ['Mid', rowData[COLUMNS.loopTestDesiredMid], rowData[COLUMNS.loopTestMeasuredMid]],
-      ['High', rowData[COLUMNS.loopTestDesiredHigh], rowData[COLUMNS.loopTestMeasuredHigh]]
+      ['Point', 'Desired Output (mA)', 'Measured Output (mA)', 'Accuracy'],
+      ['Low', desiredLow, measuredLow, accuracyLow],
+      ['Mid', desiredMid, measuredMid, accuracyMid],
+      ['High', desiredHigh, measuredHigh, accuracyHigh]
     ]);
   }
 

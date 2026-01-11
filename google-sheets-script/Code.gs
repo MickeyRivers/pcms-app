@@ -208,34 +208,82 @@ function createPDF(data, rowData) {
   // Clear existing content
   body.clear();
 
-  // Add header
-  const header = body.appendParagraph('CALIBRATION CERTIFICATE');
-  header.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-  header.setFontSize(18);
-  const headerText = header.editAsText();
-  headerText.setBold(0, headerText.getText().length - 1, true);
+  // Company slogan
+  const slogan = body.appendParagraph('YOUR GO-TO FLOW PROS');
+  slogan.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  slogan.setFontSize(12);
+  slogan.setBold(true);
+
+  // Address
+  const address = body.appendParagraph('342 Waxwood Ln. San Antonio, TX 78216');
+  address.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  address.setFontSize(10);
+
+  // Website
+  const website = body.appendParagraph('www.flow-cert.com');
+  website.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  website.setFontSize(10);
+
+  // Phone
+  const phone = body.appendParagraph('Cell (210) 601-9318');
+  phone.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  phone.setFontSize(10);
 
   body.appendParagraph(''); // Spacing
 
-  // Contact info
-  const contact = body.appendParagraph(`${CERT_HEADER.company} | ${CERT_HEADER.contact} | ${CERT_HEADER.website}`);
-  contact.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-  contact.setFontSize(10);
+  // Title
+  const title = body.appendParagraph('Testing and Calibration Report');
+  title.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+  title.setFontSize(16);
+  const titleText = title.editAsText();
+  titleText.setBold(0, titleText.getText().length - 1, true);
 
   body.appendParagraph(''); // Spacing
-  body.appendHorizontalRule();
-  body.appendParagraph(''); // Spacing
 
-  // Service Information
+  // Service Information - basic fields always shown
   addField(body, 'Date', formatDate(data.date));
   addField(body, 'Customer', data.customer);
   addField(body, 'Facility/Location', data.facility);
-  addField(body, 'Water/Wastewater', data.waterWastewater);
-  addField(body, 'Service Type', data.serviceType);
-  addField(body, 'Manufacturer/Model', data.manufacturer);
+
+  // Conditional fields - only show if not empty/N/A
+  if (data.manufacturer && data.manufacturer !== 'N/A') {
+    addField(body, 'Manufacturer/Model', data.manufacturer);
+  }
+
+  // Serial Number - ALWAYS show even if N/A
   addField(body, 'Serial Number', data.serialNumber);
-  addField(body, 'Meter Reading', data.meterReading);
-  addField(body, 'Method of Verification', data.methodOfVerification);
+
+  if (data.meterReading && data.meterReading !== 'N/A') {
+    addField(body, 'Meter Reading', data.meterReading);
+  }
+
+  if (data.methodOfVerification && data.methodOfVerification !== 'N/A') {
+    addField(body, 'Method of Verification', data.methodOfVerification);
+  }
+
+  if (data.calibrationAdjustments && data.calibrationAdjustments !== 'N/A') {
+    addField(body, 'Calibration Adjustments', data.calibrationAdjustments);
+  }
+
+  if (data.programmingChanges && data.programmingChanges !== 'N/A') {
+    addField(body, 'Programming Changes', data.programmingChanges);
+  }
+
+  if (data.range && data.range !== 'N/A') {
+    addField(body, 'Range', data.range);
+  }
+
+  if (data.units && data.units !== 'N/A') {
+    addField(body, 'Units', data.units);
+  }
+
+  // Notes field
+  if (data.notes && data.notes !== 'N/A') {
+    addField(body, 'Notes', data.notes);
+  }
+
+  // Tested by
+  addField(body, 'Tested by', data.testedBy);
 
   body.appendParagraph(''); // Spacing
 
@@ -243,7 +291,7 @@ function createPDF(data, rowData) {
   const serviceType = data.serviceType.toLowerCase();
 
   if (serviceType.includes('closed pipe')) {
-    addServiceSection(body, 'FLOW RATE COMPARISON');
+    addServiceSection(body, 'Flow Rate Comparison');
 
     // Get values
     const valFlow = rowData[COLUMNS.closedPipeValidatingFlowBefore] || 'N/A';
@@ -267,12 +315,16 @@ function createPDF(data, rowData) {
       ['Validating Meter (GPM)', 'Customer Meter (GPM)', 'Accuracy'],
       [valFlow, cusFlow, accuracy]
     ]);
-    addField(body, 'Pipe Material', data.pipeMaterial);
-    addField(body, 'Pipe Size (O.D.)', data.pipeSize);
   }
 
   if (serviceType.includes('open channel')) {
-    addServiceSection(body, 'LEVEL MEASUREMENTS');
+    // Show Primary Device Type before table (if not N/A)
+    if (data.primaryDeviceType && data.primaryDeviceType !== 'N/A') {
+      addField(body, 'Primary Device Type', data.primaryDeviceType);
+      body.appendParagraph(''); // Spacing
+    }
+
+    addServiceSection(body, 'Level Measurements');
 
     // Get values
     const beforeVal = rowData[COLUMNS.openChannelLevelInChannelBefore] || 'N/A';
@@ -297,12 +349,9 @@ function createPDF(data, rowData) {
       ['Before Adjustment', 'After Adjustment', '% Difference'],
       [beforeVal, afterVal, percentDiff]
     ]);
-    addField(body, 'Primary Device Type', data.primaryDeviceType);
   }
 
   if (serviceType.includes('chart recorder')) {
-    addServiceSection(body, 'CHART RECORDER TEST RESULTS');
-
     // Get values
     const meterBefore = rowData[COLUMNS.chartRecorderMeterBefore] || 'N/A';
     const chartBefore = rowData[COLUMNS.chartRecorderChartBefore] || 'N/A';
@@ -339,21 +388,29 @@ function createPDF(data, rowData) {
       percentDiffAfter = 'N/A';
     }
 
+    // Before Adjustment Table
+    addServiceSection(body, 'Before Adjustment');
     addMeasurementTable(body, [
-      ['Measurement', 'Before Adjustment', 'After Adjustment', '% Difference (Before)', '% Difference (After)'],
-      ['Value on Meter', meterBefore, meterAfter, percentDiffBefore, percentDiffAfter],
-      ['Value on Chart Recorder', chartBefore, chartAfter, '', '']
+      ['On Meter', 'On Chart', '% Difference'],
+      [meterBefore, chartBefore, percentDiffBefore]
+    ]);
+
+    body.appendParagraph(''); // Spacing between tables
+
+    // After Adjustment Table
+    addServiceSection(body, 'After Adjustment');
+    addMeasurementTable(body, [
+      ['On Meter', 'On Chart', '% Difference'],
+      [meterAfter, chartAfter, percentDiffAfter]
     ]);
   }
 
   if (serviceType.includes('loop test')) {
-    addServiceSection(body, 'LOOP TEST RESULTS');
+    addServiceSection(body, 'Loop Test Results (mA)');
 
-    // Get values
+    // Get values - only Low and High
     const desiredLow = rowData[COLUMNS.loopTestDesiredLow] || 'N/A';
     const measuredLow = rowData[COLUMNS.loopTestMeasuredLow] || 'N/A';
-    const desiredMid = rowData[COLUMNS.loopTestDesiredMid] || 'N/A';
-    const measuredMid = rowData[COLUMNS.loopTestMeasuredMid] || 'N/A';
     const desiredHigh = rowData[COLUMNS.loopTestDesiredHigh] || 'N/A';
     const measuredHigh = rowData[COLUMNS.loopTestMeasuredHigh] || 'N/A';
 
@@ -371,20 +428,6 @@ function createPDF(data, rowData) {
       accuracyLow = 'N/A';
     }
 
-    // Calculate accuracy for Mid point
-    let accuracyMid = 'N/A';
-    try {
-      if (desiredMid !== 'N/A' && measuredMid !== 'N/A') {
-        const desiredNum = parseFloat(desiredMid);
-        const measuredNum = parseFloat(measuredMid);
-        if (desiredNum !== 0) {
-          accuracyMid = ((measuredNum / desiredNum) * 100).toFixed(1) + '%';
-        }
-      }
-    } catch (e) {
-      accuracyMid = 'N/A';
-    }
-
     // Calculate accuracy for High point
     let accuracyHigh = 'N/A';
     try {
@@ -400,34 +443,31 @@ function createPDF(data, rowData) {
     }
 
     addMeasurementTable(body, [
-      ['Point', 'Desired Output (mA)', 'Measured Output (mA)', 'Accuracy'],
+      ['Test Point', 'Desired', 'Measured', 'Accuracy'],
       ['Low', desiredLow, measuredLow, accuracyLow],
-      ['Mid', desiredMid, measuredMid, accuracyMid],
       ['High', desiredHigh, measuredHigh, accuracyHigh]
     ]);
   }
 
   body.appendParagraph(''); // Spacing
 
-  // Additional Info
-  addField(body, 'Calibration Adjustments', data.calibrationAdjustments);
-  addField(body, 'Programming Changes', data.programmingChanges);
-  addField(body, 'Range', data.range);
-  addField(body, 'Units', data.units);
-  addField(body, 'Measurement Type', data.measurementType);
-
-  if (data.notes) {
-    body.appendParagraph(''); // Spacing
-    addField(body, 'Notes', data.notes);
+  // Footer text based on service type
+  let footerText = '';
+  if (serviceType.includes('loop test')) {
+    footerText = "All parameters are within manufacturer's specifications and the meter meets or exceeds a 2% accuracy range. Method used for verifying flow: Actual flows at flumes/weirs and meter readouts were matched against a NIST-traceable calibrator.";
+  } else if (serviceType.includes('closed pipe')) {
+    footerText = "All parameters are within manufacturer's specifications and the meter meets or exceeds a 2% accuracy range. Method used for verifying flow: Actual flows at pipes and customer meter readouts were matched against a validating meter certified to NIST standards.";
+  } else if (serviceType.includes('open channel')) {
+    footerText = "All parameters are within manufacturer's specifications and the meter meets or exceeds a 2% accuracy range. Method used for verifying flow: Actual flows at flumes/weirs and meter readouts were matched using standard flow calculation methods.";
+  } else if (serviceType.includes('chart recorder')) {
+    footerText = "All parameters are within manufacturer's specifications and the meter meets or exceeds a 2% accuracy range. Method used for verifying flow: Actual flows at flumes/weirs and meter readouts were matched against the chart recorder readouts.";
   }
 
-  body.appendParagraph(''); // Spacing
-  body.appendHorizontalRule();
-
-  // Technician signature
-  const signature = body.appendParagraph(`Tested by: ${data.testedBy}`);
-  const signatureText = signature.editAsText();
-  signatureText.setBold(0, signatureText.getText().length - 1, true);
+  if (footerText) {
+    const footer = body.appendParagraph(footerText);
+    footer.setFontSize(10);
+    footer.setAlignment(DocumentApp.HorizontalAlignment.LEFT);
+  }
 
   // Save and convert to PDF
   doc.saveAndClose();

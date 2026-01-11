@@ -506,7 +506,7 @@ function uploadToDropbox(pdfBlob, data) {
 
   // Create filename
   const year = new Date(data.date).getFullYear() || new Date().getFullYear();
-  const filename = `${year}-${data.customer}-${data.facility}.pdf`.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const filename = `${year}-${data.customer}-${data.facility}.pdf`.replace(/[^a-zA-Z0-9.-]/g, '');
 
   // Dropbox API endpoint
   const url = 'https://content.dropboxapi.com/2/files/upload';

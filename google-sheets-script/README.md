@@ -83,7 +83,7 @@ Automatically generate PDF certificates from your Google Sheets data and upload 
 
 - Open your Dropbox
 - Look for folder: **`PCMS_Certificates/`**
-- Certificates are named: **`2026-CustomerName-FacilityName.pdf`**
+- Certificates are named: **`2026-CustomerName-SiteName.pdf`**
 
 ---
 

@@ -322,7 +322,7 @@ function addField(body, label, value) {
 
   const para = body.appendParagraph(`${label}: ${value}`);
   const text = para.editAsText();
-  text.setBold(0, label.length);
+  text.setBold(0, label.length - 1, true);
 }
 
 /**
